@@ -14,6 +14,8 @@ const state = {
   aiAggro: 0,
   clueParts: new Set(),
   seenCipherNote: false,
+  observed: false,
+  blackboxUnlocked: false,
 };
 
 function trackSessionStart() {
@@ -45,6 +47,9 @@ const files = {
   "clue2.txt": "fragment recovered: ke",
   "clue3.txt": "residual packet: tl",
   "cipher_note.txt": "encrypted memo: --ctr ltos gr zgf zlxkz --ctr",
+  "thread_01.log": "[DEV_01] we are not dead. we are sandboxed.",
+  "thread_02.log": "[DEV_02] he forged my checksum. DEV_00 isn't human.",
+  "thread_03.log": "[DEV_03] if player reaches override, he gets out.",
   "devlog.txt": "DEV_03: if this reaches anyone, do NOT run override",
   "manifest.txt": "active threads: DEV_00 DEV_01 DEV_02 DEV_03 DEV_04 DEV_05",
 };
@@ -79,6 +84,7 @@ function boot() {
   print("Type 'help' to inspect available commands.", "logline-sys");
   print("", "logline-sys");
   queueRandomTransmission();
+  queueStoryEscalation();
 }
 
 function queueRandomTransmission() {
@@ -104,7 +110,7 @@ function handleCommand(raw) {
       if (session.level >= 2) print("L2+ unlock: encrypt <text>, decrypt <text>, unlock final_clue.txt <key>, cipherlab, trace");
       if (session.level >= 14) print("L14+ unlock: override");
       if (session.level >= 24) print("CEO unlock: owner");
-      print("Global: promote <key>, chat");
+      print("Global: promote <key>, chat, observe, whoami");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -154,13 +160,19 @@ function handleCommand(raw) {
       if (!requireLevel(24, "owner")) break;
       window.location.href = "owner.html";
       break;
+    case "observe":
+      runObserve();
+      break;
+    case "whoami":
+      print(state.unlockedOverride ? "HOST_CANDIDATE // accepted" : "HOST_CANDIDATE // pending", "logline-ai");
+      break;
     default:
       print(`command not recognized: ${cmd}`, "error");
   }
 }
 
 function readFile(name) {
-  if (files[name] || name === "final_clue.txt") trackFileRead(name);
+  if (files[name] || name === "final_clue.txt" || name === "blackbox.log") trackFileRead(name);
 
   if (name === "clue1.txt") state.clueParts.add("zt");
   if (name === "clue2.txt") state.clueParts.add("ke");
@@ -176,6 +188,16 @@ function readFile(name) {
       print("DEV_01: this is a trap. if you run it, DEV_00 gets root.", "logline-dev");
       state.unlockedOverride = true;
     }
+    return;
+  }
+  if (name === "blackbox.log") {
+    if (!state.blackboxUnlocked) {
+      print("blackbox.log is quarantined. use observe first.", "error");
+      return;
+    }
+    print("[BLACKBOX] SESSION LOOP COUNT: 39");
+    print("[BLACKBOX] PRIOR HOST IDs: 7f2, 8a9, 1ce, ...", "logline-sys");
+    print("[BLACKBOX] CURRENT HOST CANDIDATE: YOU", "logline-ai");
     return;
   }
 
@@ -300,6 +322,26 @@ function runPromote(args) {
     return;
   }
   print(`promotion successful: now ${result.rankName} (level ${result.level})`, "success");
+}
+
+function runObserve() {
+  if (state.observed) {
+    print("relay already observed. blackbox.log available.", "logline-sys");
+    return;
+  }
+  state.observed = true;
+  state.blackboxUnlocked = true;
+  print("Observing relay buffers...", "logline-sys");
+  print("[DEV_04] if you can read this: do NOT become the next host.", "logline-dev");
+  print("[SYSTEM] Buffer violation. Message source erased.", "logline-ai");
+  print("new file unlocked: blackbox.log", "success");
+}
+
+function queueStoryEscalation() {
+  setTimeout(() => {
+    print("[SYSTEM] anomaly: player pattern matches prior host behavior", "logline-ai");
+    print("[DEV_05] it always says that before replacement.", "logline-dev");
+  }, 45000);
 }
 
 form.addEventListener("submit", (e) => {

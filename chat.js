@@ -48,24 +48,4 @@
   ).join("");
   const legendNode = document.getElementById("rankLegendList");
   if (legendNode) legendNode.innerHTML = legendList;
-
-  const modal = document.getElementById("rankInfoModal");
-  const openBtn = document.getElementById("rankInfoBtn");
-  const closeBtn = document.getElementById("rankInfoClose");
-  window.toggleRankModal = (open) => {
-    if (!modal) return;
-    modal.hidden = !open;
-  };
-
-  openBtn?.addEventListener("click", () => {
-    window.toggleRankModal(true);
-  });
-
-  closeBtn?.addEventListener("click", () => {
-    window.toggleRankModal(false);
-  });
-
-  modal?.addEventListener("click", (e) => {
-    if (e.target === modal) modal.hidden = true;
-  });
 })();

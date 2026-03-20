@@ -196,30 +196,28 @@ textarea {
 }
 
 .tiny-btn {
+  display: inline-block;
   padding: .3rem .6rem;
   font-size: .8rem;
   border-color: #ff5a7a;
   color: #ff5a7a;
-}
-
-.rank-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, .55);
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  z-index: 9999;
+  cursor: pointer;
+  list-style: none;
 }
 
 .rank-modal-card {
-  width: min(560px, 95vw);
+  width: min(560px, 92vw);
   border: 1px solid var(--line);
   background: #04070c;
   padding: .8rem 1rem;
+  margin-top: .4rem;
 }
 
 .rank-modal-card ul { margin: .3rem 0 0; padding-left: 1.1rem; max-height: 55vh; overflow-y: auto; }
+
+.rank-details { position: relative; }
+.rank-details[open] { z-index: 10; }
+.rank-details > summary::-webkit-details-marker { display: none; }
 
 .rank-dot {
   display: inline-block;

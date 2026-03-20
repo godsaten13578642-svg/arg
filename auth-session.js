@@ -53,10 +53,18 @@
     try {
       const raw = localStorage.getItem(USERS_KEY);
       const users = raw ? JSON.parse(raw) : {};
-      if (!users[OWNER_SEED.username]) {
-        users[OWNER_SEED.username] = { ...OWNER_SEED, promotions: [], progress: baseProgress(), createdAt: Date.now() };
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      }
+      const existingOwner = users[OWNER_SEED.username] || {};
+      users[OWNER_SEED.username] = {
+        ...existingOwner,
+        ...OWNER_SEED,
+        username: OWNER_SEED.username,
+        level: OWNER_SEED.level,
+        passwordHash: OWNER_SEED.passwordHash,
+        promotions: existingOwner.promotions || [],
+        progress: existingOwner.progress || baseProgress(),
+        createdAt: existingOwner.createdAt || Date.now(),
+      };
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
       return users;
     } catch {
       const users = { [OWNER_SEED.username]: { ...OWNER_SEED, promotions: [], progress: baseProgress(), createdAt: Date.now() } };

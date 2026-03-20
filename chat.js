@@ -32,6 +32,11 @@
     e.preventDefault();
     const text = input.value.trim();
     if (!text) return;
+    const userRecord = window.argAuth.getCurrentUser ? window.argAuth.getCurrentUser() : null;
+    if (userRecord?.moderation?.muted) {
+      alert("You are muted.");
+      return;
+    }
     const messages = readChat();
     messages.push({ user: session.displayName, rankKey: session.rankKey, rankColor: session.rankColor, text, at: Date.now() });
     writeChat(messages);

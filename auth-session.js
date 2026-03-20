@@ -49,6 +49,10 @@
     return { sessionsStarted: 0, filesRead: {}, finalUnlocks: 0, overridesRun: 0, cipherTraces: 0, chatsSent: 0, lastSeenAt: null };
   }
 
+  function baseModeration() {
+    return { banned: false, bannedUntil: null, timeoutUntil: null, muted: false, notes: "" };
+  }
+
   function readUsers() {
     try {
       const raw = localStorage.getItem(USERS_KEY);
@@ -67,12 +71,13 @@
         passwordHash: OWNER_SEED.passwordHash,
         promotions: existingOwner.promotions || [],
         progress: existingOwner.progress || baseProgress(),
+        moderation: existingOwner.moderation || baseModeration(),
         createdAt: existingOwner.createdAt || Date.now(),
       };
       localStorage.setItem(USERS_KEY, JSON.stringify(users));
       return users;
     } catch {
-      const users = { [OWNER_SEED.username]: { ...OWNER_SEED, promotions: [], progress: baseProgress(), createdAt: Date.now() } };
+      const users = { [OWNER_SEED.username]: { ...OWNER_SEED, promotions: [], progress: baseProgress(), moderation: baseModeration(), createdAt: Date.now() } };
       localStorage.setItem(USERS_KEY, JSON.stringify(users));
       return users;
     }
@@ -119,7 +124,7 @@
     if (users[clean]) return { ok: false, error: "Username already exists." };
     const passwordHash = await sha256Hex(`orpheus:${clean}:${password}`);
 
-    users[clean] = { username: clean, passwordHash, level: 1, promotions: [], progress: baseProgress(), createdAt: Date.now() };
+    users[clean] = { username: clean, passwordHash, level: 1, promotions: [], progress: baseProgress(), moderation: baseModeration(), createdAt: Date.now() };
     writeUsers(users);
     return { ok: true };
   }
@@ -130,6 +135,11 @@
     const resolvedUsername = clean === "owner" ? OWNER_SEED.username : clean;
     const user = users[resolvedUsername];
     if (!user) return null;
+    const mod = user.moderation || baseModeration();
+    const now = Date.now();
+    if (mod.banned) return null;
+    if (mod.bannedUntil && now < mod.bannedUntil) return null;
+    if (mod.timeoutUntil && now < mod.timeoutUntil) return null;
 
     const hash = resolvedUsername === OWNER_SEED.username
       ? await sha256Hex(`orpheus-owner-salt-v1:${password}`)
@@ -199,7 +209,37 @@
       rankColor: rankFor(u.level).color,
       createdAt: u.createdAt,
       progress: u.progress || baseProgress(),
+      moderation: u.moderation || baseModeration(),
     }));
+  }
+
+  function isOwnerSession() {
+    const session = getSession();
+    return !!session && session.level === RANKS.length;
+  }
+
+  function updateUserModeration(username, patch) {
+    if (!isOwnerSession()) return { ok: false, error: "Owner access required." };
+    const users = readUsers();
+    const key = username.toLowerCase();
+    if (!users[key]) return { ok: false, error: "User not found." };
+    if (key === OWNER_SEED.username) return { ok: false, error: "Cannot moderate owner account." };
+    users[key].moderation = { ...(users[key].moderation || baseModeration()), ...patch };
+    writeUsers(users);
+    return { ok: true };
+  }
+
+  function getUser(username) {
+    if (!isOwnerSession()) return null;
+    const users = readUsers();
+    return users[username.toLowerCase()] || null;
+  }
+
+  function getCurrentUser() {
+    const session = getSession();
+    if (!session) return null;
+    const users = readUsers();
+    return users[session.username] || null;
   }
 
   window.argAuth = {
@@ -212,6 +252,9 @@
     recordProgress,
     promoteCurrent,
     listUsersForOwner,
+    updateUserModeration,
+    getUser,
+    getCurrentUser,
     readUsers,
   };
 })();

@@ -3,27 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Owner Dashboard</title>
+  <title>CEO Console</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="panel">
-    <h2>Owner Dashboard</h2>
-    <p class="muted">Visible only to owner account. User list + progress analytics.</p>
-
-    <table class="users-table" id="users-table">
-      <thead>
-        <tr>
-          <th>User</th><th>Rank</th><th>Level</th><th>Sessions</th><th>Final</th><th>Overrides</th><th>Chat</th><th>Last Seen</th>
-        </tr>
-      </thead>
-      <tbody id="users-body"></tbody>
-    </table>
+    <h2>ORPHEUS_CEO Console</h2>
+    <p class="muted">Private control center. Manage players, chat moderation, and exports.</p>
 
     <div class="btn-row">
-      <button id="ownerLogout" class="btn ghost" type="button">Log Out</button>
-      <a class="btn ghost" href="chat.html">Open Chat</a>
+      <button class="btn ghost owner-tab active" data-tab="players" type="button">Players</button>
+      <button class="btn ghost owner-tab" data-tab="chat" type="button">Chat Tools</button>
+      <button class="btn ghost owner-tab" data-tab="system" type="button">System</button>
     </div>
+
+    <section id="tab-players" class="owner-panel">
+      <div class="owner-split">
+        <aside>
+          <h3>Players</h3>
+          <ul id="playersList" class="player-list"></ul>
+        </aside>
+        <article>
+          <h3>Selected Player</h3>
+          <div id="playerDetails" class="muted">Select a player to view rank, progress, moderation, and chat logs.</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-chat" class="owner-panel" hidden>
+      <h3>Chat Controls</h3>
+      <div class="btn-row">
+        <button id="clearChatBtn" class="btn ghost" type="button">Clear Logs</button>
+        <button id="saveChatBtn" class="btn ghost" type="button">Save Logs</button>
+      </div>
+      <p id="chatToolsMsg" class="muted tiny"></p>
+    </section>
+
+    <section id="tab-system" class="owner-panel" hidden>
+      <h3>System</h3>
+      <div class="btn-row">
+        <button id="ownerLogout" class="btn ghost" type="button">Log Out</button>
+        <a class="btn ghost" href="terminal.html">Open Terminal</a>
+      </div>
+    </section>
   </main>
 
   <script src="auth-session.js"></script>

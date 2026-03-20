@@ -44,7 +44,7 @@
   render();
 
   const legendList = (window.argAuth.RANKS || []).map((r, idx) =>
-    `<li><span class="rank-dot" style="background:${r.color}"></span> ${r.name} (L${idx + 1})</li>`
+    `<li style="color:${r.color}"><span class="rank-dot" style="background:${r.color}"></span> ${r.name} (L${idx + 1})</li>`
   ).join("");
   const legendNode = document.getElementById("rankLegendList");
   if (legendNode) legendNode.innerHTML = legendList;

@@ -48,4 +48,10 @@
   ).join("");
   const legendNode = document.getElementById("rankLegendList");
   if (legendNode) legendNode.innerHTML = legendList;
+
+  const closeBtn = document.getElementById("rankInfoClose");
+  closeBtn?.addEventListener("click", () => {
+    const panel = closeBtn.closest("details");
+    if (panel) panel.open = false;
+  });
 })();

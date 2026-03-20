@@ -48,6 +48,9 @@ const files = {
   "clue3.txt": "residual packet: tl",
   "cipher_note.txt": "encrypted memo: --ctr ltos gr zgf zlxkz --ctr",
   "signal.bin": "01000100 01000101 01010110 00110000 00110000 01001100 01001001 01000101 01010011",
+  "doc_a.enc": "aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZG9jdW1lbnQvZC8xWnROYm4xYUJZX0k5X3EzdkNjSERQbWN4MDNIVEhtZnpLaUNLZEJuVjBzSS9lZGl0P3VzcD1zaGFyaW5n",
+  "doc_b.enc": "aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZG9jdW1lbnQvZC8xZG1pbFlEcS1rRWZ6cTVMMVFvNDcxajNQY3lXLTBrM1V3SlY2OVpBSVViMC9lZGl0P3VzcD1zaGFyaW5n",
+  "doc_c.enc": "aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vZG9jdW1lbnQvZC8xZHlHT2l3bkhHbi1vSVVRR2R6WFd0bkRjMDIzczhOcURlczVKUm1jNW1lTS9lZGl0P3VzcD1zaGFyaW5n",
   "thread_01.log": "[DEV_01] we are not dead. we are sandboxed.",
   "thread_02.log": "[DEV_02] he forged my checksum. DEV_00 isn't human.",
   "thread_03.log": "[DEV_03] if player reaches override, he gets out.",
@@ -112,7 +115,7 @@ function handleCommand(raw) {
       if (session.level >= 14) print("L14+ unlock: override");
       if (session.level >= 24) print("CEO unlock: owner");
       print("Global: promote <key>, chat, observe, whoami");
-      print("Hidden utility: decodebin <8-bit binary groups>");
+      print("Hidden utility: decodebin <8-bit binary groups>, decode64 <base64>");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -170,6 +173,9 @@ function handleCommand(raw) {
       break;
     case "decodebin":
       runDecodeBinary(args);
+      break;
+    case "decode64":
+      runDecode64(args);
       break;
     default:
       print(`command not recognized: ${cmd}`, "error");
@@ -362,6 +368,19 @@ function runDecodeBinary(args) {
   }
   const text = groups.map((g) => String.fromCharCode(parseInt(g, 2))).join("");
   print(`decoded: ${text}`, "success");
+}
+
+function runDecode64(args) {
+  if (!args.length) {
+    print("usage: decode64 <base64 text>", "error");
+    return;
+  }
+  try {
+    const out = atob(args.join(""));
+    print(`decoded64: ${out}`, "success");
+  } catch {
+    print("invalid base64 input", "error");
+  }
 }
 
 form.addEventListener("submit", (e) => {

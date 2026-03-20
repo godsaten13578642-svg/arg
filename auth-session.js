@@ -30,7 +30,7 @@
   ];
 
   const OWNER_SEED = {
-    username: "owner",
+    username: "orpheus_ceo",
     passwordHash: "d9d29b496379b836de9a212e8ca47182d6cafcee280d1984bc232fc9288f6011",
     level: RANKS.length,
   };
@@ -53,6 +53,11 @@
     try {
       const raw = localStorage.getItem(USERS_KEY);
       const users = raw ? JSON.parse(raw) : {};
+      // Migrate legacy owner username to ORPHEUS_CEO account slug.
+      if (users.owner && !users[OWNER_SEED.username]) {
+        users[OWNER_SEED.username] = users.owner;
+        delete users.owner;
+      }
       const existingOwner = users[OWNER_SEED.username] || {};
       users[OWNER_SEED.username] = {
         ...existingOwner,
@@ -122,12 +127,13 @@
   async function authenticate(username, password) {
     const clean = username.trim().toLowerCase();
     const users = readUsers();
-    const user = users[clean];
+    const resolvedUsername = clean === "owner" ? OWNER_SEED.username : clean;
+    const user = users[resolvedUsername];
     if (!user) return null;
 
-    const hash = clean === OWNER_SEED.username
+    const hash = resolvedUsername === OWNER_SEED.username
       ? await sha256Hex(`orpheus-owner-salt-v1:${password}`)
-      : await sha256Hex(`orpheus:${clean}:${password}`);
+      : await sha256Hex(`orpheus:${resolvedUsername}:${password}`);
 
     if (hash !== user.passwordHash) return null;
     return setSession(user);

@@ -72,7 +72,7 @@ function print(line, cls = "") {
 }
 
 function boot() {
-  statusNode.textContent = `session: ${session.role} (L${session.level})`;
+  statusNode.textContent = `session: ${session.rankName} (L${session.level})`;
   trackSessionStart();
   print("ORPHEUS NODE BOOT v3.17", "logline-sys");
   print("Emergency relay active. Non-admin user detected.", "logline-sys");
@@ -101,9 +101,9 @@ function handleCommand(raw) {
   switch (cmd.toLowerCase()) {
     case "help":
       print("Commands: help, ls, cat <file>, clear");
-      if (session.level >= 2) print("Level 2 unlock: encrypt <text>, decrypt <text>, unlock final_clue.txt <key>, cipherlab, trace");
-      if (session.level >= 3) print("Level 3 unlock: override");
-      if (session.level >= 4) print("Owner unlock: owner");
+      if (session.level >= 2) print("L2+ unlock: encrypt <text>, decrypt <text>, unlock final_clue.txt <key>, cipherlab, trace");
+      if (session.level >= 14) print("L14+ unlock: override");
+      if (session.level >= 24) print("CEO unlock: owner");
       print("Global: promote <key>, chat");
       break;
     case "ls":
@@ -121,7 +121,7 @@ function handleCommand(raw) {
       unlockFile(args);
       break;
     case "override":
-      if (!requireLevel(3, "override")) break;
+      if (!requireLevel(14, "override")) break;
       doOverride();
       break;
     case "encrypt":
@@ -151,7 +151,7 @@ function handleCommand(raw) {
       window.location.href = "chat.html";
       break;
     case "owner":
-      if (!requireLevel(4, "owner")) break;
+      if (!requireLevel(24, "owner")) break;
       window.location.href = "owner.html";
       break;
     default:
@@ -299,7 +299,7 @@ function runPromote(args) {
     print(`promotion failed: ${result.error}`, "error");
     return;
   }
-  print(`promotion successful: now ${result.role} (level ${result.level})`, "success");
+  print(`promotion successful: now ${result.rankName} (level ${result.level})`, "success");
 }
 
 form.addEventListener("submit", (e) => {

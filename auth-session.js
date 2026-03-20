@@ -1,17 +1,43 @@
 (function () {
   const USERS_KEY = "orpheus_users_v1";
-  const SESSION_KEY = "orpheus_session_v2";
-  const PROMOTION_KEYS = {
-    "mod-ascend-73": { role: "moderator", level: 2 },
-    "admin-root-11": { role: "admin", level: 3 }
-  };
+  const SESSION_KEY = "orpheus_session_v3";
+
+  const RANKS = [
+    { key: "recruit", name: "Recruit", color: "#9fd9ff" },
+    { key: "jr_mod", name: "Jr. Mod", color: "#88f58c" },
+    { key: "mod", name: "Mod", color: "#6eea74" },
+    { key: "sr_mod", name: "Sr. Mod", color: "#51d85a" },
+    { key: "jr_staff", name: "Jr. Staff", color: "#ffe08a" },
+    { key: "staff", name: "Staff", color: "#ffd166" },
+    { key: "sr_staff", name: "Sr. Staff", color: "#ffbb4d" },
+    { key: "jr_recruiter", name: "Jr. Recruiter", color: "#d8b4ff" },
+    { key: "recruiter", name: "Recruiter", color: "#c58cff" },
+    { key: "sr_recruiter", name: "Sr. Recruiter", color: "#af6dff" },
+    { key: "jr_trainer", name: "Jr. Trainer", color: "#90f5f0" },
+    { key: "trainer", name: "Trainer", color: "#58e7df" },
+    { key: "sr_trainer", name: "Sr. Trainer", color: "#39cec7" },
+    { key: "head_mod", name: "Head Mod", color: "#ff9ca3" },
+    { key: "head_staff", name: "Head Staff", color: "#ff858f" },
+    { key: "head_recruiter", name: "Head Recruiter", color: "#ff6f7d" },
+    { key: "head_trainer", name: "Head Trainer", color: "#ff5a6c" },
+    { key: "jr_dev", name: "Jr. Dev", color: "#9ab0ff" },
+    { key: "dev", name: "Dev", color: "#7f95ff" },
+    { key: "sr_dev", name: "Sr. Dev", color: "#667fff" },
+    { key: "head_dev", name: "Head Dev", color: "#4b67ff" },
+    { key: "co_owner", name: "Co Owner", color: "#ff8de1" },
+    { key: "invester", name: "Invester", color: "#ff74c8" },
+    { key: "ceo", name: "CEO", color: "#ff5a7a" },
+  ];
 
   const OWNER_SEED = {
     username: "owner",
     passwordHash: "d9d29b496379b836de9a212e8ca47182d6cafcee280d1984bc232fc9288f6011",
-    role: "owner",
-    level: 4,
+    level: RANKS.length,
   };
+
+  function rankFor(level) {
+    return RANKS[Math.max(1, Math.min(level, RANKS.length)) - 1];
+  }
 
   async function sha256Hex(input) {
     const data = new TextEncoder().encode(input);
@@ -20,15 +46,7 @@
   }
 
   function baseProgress() {
-    return {
-      sessionsStarted: 0,
-      filesRead: {},
-      finalUnlocks: 0,
-      overridesRun: 0,
-      cipherTraces: 0,
-      chatsSent: 0,
-      lastSeenAt: null,
-    };
+    return { sessionsStarted: 0, filesRead: {}, finalUnlocks: 0, overridesRun: 0, cipherTraces: 0, chatsSent: 0, lastSeenAt: null };
   }
 
   function readUsers() {
@@ -47,9 +65,7 @@
     }
   }
 
-  function writeUsers(users) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  }
+  function writeUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
 
   function getSession() {
     try {
@@ -61,17 +77,18 @@
         return null;
       }
       return session;
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   }
 
   function setSession(user, hours = 8) {
+    const rank = rankFor(user.level);
     const session = {
       username: user.username,
-      role: user.role,
       level: user.level,
-      displayName: user.role === "owner" ? "ORPHEUS_CEO" : user.username,
+      rankKey: rank.key,
+      rankName: rank.name,
+      rankColor: rank.color,
+      displayName: user.level === RANKS.length ? "ORPHEUS_CEO" : user.username,
       expiresAt: Date.now() + hours * 60 * 60 * 1000,
     };
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -87,17 +104,9 @@
 
     const users = readUsers();
     if (users[clean]) return { ok: false, error: "Username already exists." };
-
     const passwordHash = await sha256Hex(`orpheus:${clean}:${password}`);
-    users[clean] = {
-      username: clean,
-      passwordHash,
-      role: "observer",
-      level: 1,
-      promotions: [],
-      progress: baseProgress(),
-      createdAt: Date.now(),
-    };
+
+    users[clean] = { username: clean, passwordHash, level: 1, promotions: [], progress: baseProgress(), createdAt: Date.now() };
     writeUsers(users);
     return { ok: true };
   }
@@ -138,41 +147,49 @@
     setSession(user);
   }
 
+  function expectedPromotionKey(level) {
+    const next = rankFor(level + 1);
+    return `promote:${next.key}:orpheus`;
+  }
+
   function promoteCurrent(key) {
     const session = getSession();
     if (!session) return { ok: false, error: "No active session." };
-    const promo = PROMOTION_KEYS[key];
-    if (!promo) return { ok: false, error: "Invalid promotion key." };
-
     const users = readUsers();
     const user = users[session.username];
     if (!user) return { ok: false, error: "User not found." };
-    if (user.level >= promo.level) return { ok: false, error: "Promotion already applied." };
+    if (user.level >= RANKS.length) return { ok: false, error: "Already max rank." };
 
-    user.role = promo.role;
-    user.level = promo.level;
+    if (key !== expectedPromotionKey(user.level)) {
+      return { ok: false, error: "Invalid key for your next rank." };
+    }
+
+    user.level += 1;
     user.promotions = [...(user.promotions || []), key];
     users[session.username] = user;
     writeUsers(users);
+    const nextRank = rankFor(user.level);
     setSession(user);
 
-    return { ok: true, role: user.role, level: user.level };
+    return { ok: true, level: user.level, rankName: nextRank.name };
   }
 
   function listUsersForOwner() {
     const session = getSession();
-    if (!session || session.role !== "owner") return [];
+    if (!session || session.level !== RANKS.length) return [];
     const users = readUsers();
     return Object.values(users).map((u) => ({
       username: u.username,
-      role: u.role,
       level: u.level,
+      rankName: rankFor(u.level).name,
+      rankColor: rankFor(u.level).color,
       createdAt: u.createdAt,
       progress: u.progress || baseProgress(),
     }));
   }
 
   window.argAuth = {
+    RANKS,
     getSession,
     clearSession,
     signup,

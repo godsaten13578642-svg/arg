@@ -1,6 +1,6 @@
 (function () {
-  const session = window.argAuth?.requireSession({ minLevel: 4, redirect: "index.html" });
-  if (!session || session.role !== "owner") {
+  const session = window.argAuth?.requireSession({ minLevel: 24, redirect: "index.html" });
+  if (!session || session.level !== (window.argAuth.RANKS?.length || 24)) {
     window.location.replace("index.html");
     return;
   }
@@ -11,10 +11,10 @@
   rows.innerHTML = users.map((u) => {
     const p = u.progress || {};
     const lastSeen = p.lastSeenAt ? new Date(p.lastSeenAt).toLocaleString() : "never";
-    const name = u.role === "owner" ? "ORPHEUS_CEO" : u.username;
+    const name = u.level === (window.argAuth.RANKS?.length || 24) ? "ORPHEUS_CEO" : u.username;
     return `<tr>
       <td>${name}</td>
-      <td>${u.role}</td>
+      <td style="color:${u.rankColor}">${u.rankName}</td>
       <td>${u.level}</td>
       <td>${p.sessionsStarted || 0}</td>
       <td>${p.finalUnlocks || 0}</td>

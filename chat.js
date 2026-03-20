@@ -49,8 +49,21 @@
   const legendNode = document.getElementById("rankLegendList");
   if (legendNode) legendNode.innerHTML = legendList;
 
-  document.getElementById("rankInfoBtn")?.addEventListener("click", () => {
-    const panel = document.getElementById("rankInfo");
-    panel.hidden = !panel.hidden;
+  const modal = document.getElementById("rankInfoModal");
+  const openBtn = document.getElementById("rankInfoBtn");
+  const closeBtn = document.getElementById("rankInfoClose");
+
+  openBtn?.addEventListener("click", () => {
+    if (!modal) return;
+    modal.hidden = false;
+  });
+
+  closeBtn?.addEventListener("click", () => {
+    if (!modal) return;
+    modal.hidden = true;
+  });
+
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) modal.hidden = true;
   });
 })();

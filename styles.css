@@ -41,6 +41,7 @@ h1,h2,h3 { margin-top: 0; letter-spacing: 0.04em; }
   color: #001b11;
   background: var(--accent);
   font-weight: 700;
+  cursor: pointer;
 }
 .btn.ghost {
   color: var(--accent);
@@ -201,14 +202,24 @@ textarea {
   color: #ff5a7a;
 }
 
-.rank-info {
-  border: 1px solid var(--line);
-  background: #04070c;
-  padding: .6rem .8rem;
-  margin-bottom: .8rem;
+.rank-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .55);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 9999;
 }
 
-.rank-info ul { margin: .3rem 0 0; padding-left: 1.1rem; }
+.rank-modal-card {
+  width: min(560px, 95vw);
+  border: 1px solid var(--line);
+  background: #04070c;
+  padding: .8rem 1rem;
+}
+
+.rank-modal-card ul { margin: .3rem 0 0; padding-left: 1.1rem; max-height: 55vh; overflow-y: auto; }
 
 .rank-dot {
   display: inline-block;

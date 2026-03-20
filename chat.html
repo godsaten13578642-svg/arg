@@ -13,9 +13,14 @@
       <button id="rankInfoBtn" class="btn ghost tiny-btn" type="button">(i) rank colors</button>
     </div>
     <p class="muted">Shared local chat. Owner appears as <code>ORPHEUS_CEO</code>.</p>
-    <div id="rankInfo" class="rank-info" hidden>
-      <p><strong>Rank Color Key</strong></p>
-      <ul id="rankLegendList"></ul>
+    <div id="rankInfoModal" class="rank-modal" hidden>
+      <div class="rank-modal-card">
+        <div class="chat-head">
+          <p><strong>Rank Color Key</strong></p>
+          <button id="rankInfoClose" class="btn ghost tiny-btn" type="button">close</button>
+        </div>
+        <ul id="rankLegendList"></ul>
+      </div>
     </div>
 
     <div id="chat-log" class="chat-log"></div>

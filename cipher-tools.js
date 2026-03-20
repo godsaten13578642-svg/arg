@@ -1,4 +1,17 @@
 (function () {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("k");
+  const validToken = "orpheus-ztketl";
+
+  const main = document.getElementById("cipher-main");
+  const locked = document.getElementById("cipher-locked");
+
+  if (main && locked) {
+    const unlocked = token === validToken;
+    main.hidden = !unlocked;
+    locked.hidden = unlocked;
+  }
+
   const encMap = {
     a: 'q', b: 'w', c: 'e', d: 'r', e: 't', f: 'y', g: 'u', h: 'i', i: 'o', j: 'p',
     k: 'a', l: 's', m: 'd', n: 'f', o: 'g', p: 'h', q: 'j', r: 'k', s: 'l', t: 'z',
@@ -41,7 +54,7 @@
   const leftBox = document.getElementById('decryptor-box');
   const rightBox = document.getElementById('encryptor-box');
 
-  if (!leftBox || !rightBox) return;
+  if (!leftBox || !rightBox || token !== validToken) return;
 
   document.getElementById("encBtn").onclick = () => {
     const input = document.getElementById("encIn").value;

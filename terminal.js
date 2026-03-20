@@ -7,6 +7,7 @@ const state = {
   unlockedOverride: false,
   aiAggro: 0,
   clueParts: new Set(),
+  seenCipherNote: false,
 };
 
 const files = {
@@ -68,7 +69,7 @@ function handleCommand(raw) {
 
   switch (cmd.toLowerCase()) {
     case "help":
-      print("Commands: help, ls, cat <file>, unlock final_clue.txt <key>, override, encrypt <text>, decrypt <text>, cipherlab, clear");
+      print("Commands: help, ls, cat <file>, unlock final_clue.txt <key>, override, clear");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -93,7 +94,10 @@ function handleCommand(raw) {
       runDecrypt(args);
       break;
     case "cipherlab":
-      print("Open cipher.html for the full encrypt/decrypt utility panels.", "logline-sys");
+      openCipherLab();
+      break;
+    case "trace":
+      openCipherLab();
       break;
     case "clear":
       output.innerHTML = "";
@@ -107,6 +111,8 @@ function readFile(name) {
   if (name === "clue1.txt") state.clueParts.add("zt");
   if (name === "clue2.txt") state.clueParts.add("ke");
   if (name === "clue3.txt") state.clueParts.add("tl");
+
+  if (name === "cipher_note.txt") state.seenCipherNote = true;
 
   if (name === "final_clue.txt") {
     if (!state.unlockedFinal) {
@@ -206,6 +212,16 @@ function runDecrypt(args) {
     return;
   }
   print(decryptText(args.join(" ")), "success");
+}
+
+function openCipherLab() {
+  if (!state.seenCipherNote) {
+    print("trace failed: no cipher signatures found", "error");
+    return;
+  }
+
+  const key = "orpheus-ztketl";
+  print(`hidden route located: cipher.html?k=${key}`, "success");
 }
 
 form.addEventListener("submit", (e) => {

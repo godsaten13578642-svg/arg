@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="panel">
+  <main class="panel" id="cipher-main" hidden>
     <h2>Cipher Sandbox</h2>
     <p class="muted">In-world utility page. Use this to decode suspicious files from the terminal.</p>
 
@@ -27,6 +27,13 @@
       </section>
     </div>
 
+    <p><a href="terminal.html">← return to terminal</a></p>
+  </main>
+
+  <main class="panel" id="cipher-locked">
+    <h2>Route Not Indexed</h2>
+    <p class="error">403 :: missing relay token</p>
+    <p class="muted">If this is a valid recovery session, return to terminal and run a trace.</p>
     <p><a href="terminal.html">← return to terminal</a></p>
   </main>
 

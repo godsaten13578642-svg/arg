@@ -116,6 +116,7 @@ function handleCommand(raw) {
       if (session.level >= 24) print("CEO unlock: owner");
       print("Global: promote <key>, chat, observe, whoami");
       print("Hidden utility: decodebin <8-bit binary groups>, decode64 <base64>");
+      print("Progression: missions, progress");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -177,6 +178,12 @@ function handleCommand(raw) {
     case "decode64":
       runDecode64(args);
       break;
+    case "missions":
+      showMissions();
+      break;
+    case "progress":
+      showProgress();
+      break;
     default:
       print(`command not recognized: ${cmd}`, "error");
   }
@@ -188,6 +195,9 @@ function readFile(name) {
   if (name === "clue1.txt") state.clueParts.add("zt");
   if (name === "clue2.txt") state.clueParts.add("ke");
   if (name === "clue3.txt") state.clueParts.add("tl");
+  if (name === "thread_01.log" || name === "thread_02.log" || name === "thread_03.log") {
+    window.argAuth.unlockMilestone("read_threads");
+  }
 
   if (name === "cipher_note.txt") state.seenCipherNote = true;
 
@@ -236,6 +246,8 @@ function unlockFile(args) {
     state.unlockedFinal = true;
     state.aiAggro += 1;
     trackFinalUnlock();
+    const m = window.argAuth.unlockMilestone("unlock_final", "promotion_key");
+    if (m?.reward) print(`reward received: ${m.reward}`, "success");
     print("final_clue.txt unlocked", "success");
   } else {
     print("unlock failed: invalid key", "error");
@@ -346,6 +358,8 @@ function runObserve() {
   print("[DEV_04] if you can read this: do NOT become the next host.", "logline-dev");
   print("[SYSTEM] Buffer violation. Message source erased.", "logline-ai");
   print("new file unlocked: blackbox.log", "success");
+  const m = window.argAuth.unlockMilestone("observe_relay", "promotion_key");
+  if (m?.reward) print(`reward received: ${m.reward}`, "success");
 }
 
 function queueStoryEscalation() {
@@ -381,6 +395,27 @@ function runDecode64(args) {
   } catch {
     print("invalid base64 input", "error");
   }
+}
+
+function showMissions() {
+  print("Mission targets:");
+  print("1) Read all thread_0X logs");
+  print("2) Use observe to unlock blackbox");
+  print("3) Unlock final_clue.txt");
+  print("4) Choose whether to run override");
+}
+
+function showProgress() {
+  const p = window.argAuth.getProgressSummary?.();
+  if (!p) {
+    print("No progress data found.", "error");
+    return;
+  }
+  print(`Rank: ${p.rank} (L${p.level})`);
+  print(`Milestones: ${p.milestones.length ? p.milestones.join(", ") : "none"}`);
+  print(`Key inventory: ${p.keys.length ? p.keys.join(" | ") : "empty"}`);
+  const next = window.argAuth.nextPromotionKey?.();
+  if (next) print(`Next promotion target: ${next}`, "logline-sys");
 }
 
 form.addEventListener("submit", (e) => {

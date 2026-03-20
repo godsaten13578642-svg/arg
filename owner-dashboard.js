@@ -71,6 +71,8 @@
       <p><strong>${user.level === 24 ? "ORPHEUS_CEO" : user.username}</strong> · <span style="color:${rank.color}">${rank.name}</span> (L${user.level})</p>
       <p class="tiny">Created: ${new Date(user.createdAt).toLocaleString()}</p>
       <p class="tiny">Progress: sessions ${p.sessionsStarted || 0}, final unlocks ${p.finalUnlocks || 0}, overrides ${p.overridesRun || 0}, chats ${p.chatsSent || 0}</p>
+      <p class="tiny">Milestones: ${(p.milestones || []).join(", ") || "none"}</p>
+      <p class="tiny">Keys: ${(p.keyInventory || []).join(" | ") || "none"}</p>
       <p class="tiny">Moderation: banned=${!!mod.banned}, timeoutUntil=${mod.timeoutUntil ? new Date(mod.timeoutUntil).toLocaleString() : "none"}, muted=${!!mod.muted}</p>
       ${actionButtons(user)}
       <h4>Recent Chat Logs</h4>

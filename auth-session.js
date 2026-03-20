@@ -46,7 +46,7 @@
   }
 
   function baseProgress() {
-    return { sessionsStarted: 0, filesRead: {}, finalUnlocks: 0, overridesRun: 0, cipherTraces: 0, chatsSent: 0, lastSeenAt: null };
+    return { sessionsStarted: 0, filesRead: {}, finalUnlocks: 0, overridesRun: 0, cipherTraces: 0, chatsSent: 0, milestones: [], keyInventory: [], lastSeenAt: null };
   }
 
   function baseModeration() {
@@ -176,6 +176,13 @@
     return `promote:${next.key}:orpheus`;
   }
 
+  function nextPromotionKey() {
+    const session = getSession();
+    if (!session) return null;
+    if (session.level >= RANKS.length) return null;
+    return expectedPromotionKey(session.level);
+  }
+
   function promoteCurrent(key) {
     const session = getSession();
     if (!session) return { ok: false, error: "No active session." };
@@ -196,6 +203,49 @@
     setSession(user);
 
     return { ok: true, level: user.level, rankName: nextRank.name };
+  }
+
+  function unlockMilestone(milestoneId, rewardType = null) {
+    const session = getSession();
+    if (!session) return { ok: false, error: "No session." };
+    const users = readUsers();
+    const user = users[session.username];
+    if (!user) return { ok: false, error: "User not found." };
+    user.progress = user.progress || baseProgress();
+    user.progress.milestones = user.progress.milestones || [];
+    user.progress.keyInventory = user.progress.keyInventory || [];
+
+    if (user.progress.milestones.includes(milestoneId)) {
+      return { ok: true, already: true, reward: null };
+    }
+
+    user.progress.milestones.push(milestoneId);
+    let reward = null;
+    if (rewardType === "promotion_key") {
+      const key = expectedPromotionKey(user.level);
+      if (!user.progress.keyInventory.includes(key)) user.progress.keyInventory.push(key);
+      reward = key;
+    }
+
+    users[session.username] = user;
+    writeUsers(users);
+    setSession(user);
+    return { ok: true, already: false, reward };
+  }
+
+  function getProgressSummary() {
+    const session = getSession();
+    if (!session) return null;
+    const users = readUsers();
+    const user = users[session.username];
+    if (!user) return null;
+    const p = user.progress || baseProgress();
+    return {
+      level: user.level,
+      rank: rankFor(user.level).name,
+      milestones: p.milestones || [],
+      keys: p.keyInventory || [],
+    };
   }
 
   function listUsersForOwner() {
@@ -255,6 +305,9 @@
     updateUserModeration,
     getUser,
     getCurrentUser,
+    unlockMilestone,
+    getProgressSummary,
+    nextPromotionKey,
     readUsers,
   };
 })();

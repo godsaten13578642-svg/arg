@@ -10,14 +10,14 @@
   <main class="panel">
     <div class="chat-head">
       <h2>Relay Chat</h2>
-      <button id="rankInfoBtn" class="btn ghost tiny-btn" type="button">(i) rank colors</button>
+      <button id="rankInfoBtn" class="btn ghost tiny-btn" type="button" onclick="window.toggleRankModal && window.toggleRankModal(true)">(i) rank colors</button>
     </div>
     <p class="muted">Shared local chat. Owner appears as <code>ORPHEUS_CEO</code>.</p>
     <div id="rankInfoModal" class="rank-modal" hidden>
       <div class="rank-modal-card">
         <div class="chat-head">
           <p><strong>Rank Color Key</strong></p>
-          <button id="rankInfoClose" class="btn ghost tiny-btn" type="button">close</button>
+          <button id="rankInfoClose" class="btn ghost tiny-btn" type="button" onclick="window.toggleRankModal && window.toggleRankModal(false)">close</button>
         </div>
         <ul id="rankLegendList"></ul>
       </div>

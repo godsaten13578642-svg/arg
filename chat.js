@@ -52,15 +52,17 @@
   const modal = document.getElementById("rankInfoModal");
   const openBtn = document.getElementById("rankInfoBtn");
   const closeBtn = document.getElementById("rankInfoClose");
+  window.toggleRankModal = (open) => {
+    if (!modal) return;
+    modal.hidden = !open;
+  };
 
   openBtn?.addEventListener("click", () => {
-    if (!modal) return;
-    modal.hidden = false;
+    window.toggleRankModal(true);
   });
 
   closeBtn?.addEventListener("click", () => {
-    if (!modal) return;
-    modal.hidden = true;
+    window.toggleRankModal(false);
   });
 
   modal?.addEventListener("click", (e) => {

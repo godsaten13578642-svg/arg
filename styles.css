@@ -107,3 +107,31 @@ input {
 }
 
 .hidden-link { opacity: 0.2; font-size: .75rem; }
+
+textarea {
+  width: 100%;
+  min-height: 90px;
+  background: #000;
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: .55rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.cipher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 2rem;
+}
+
+.cipher-box {
+  border: 1px solid var(--line);
+  padding: 1rem;
+  background: #05070a;
+}
+
+.cipher-box h3 { margin-top: 0; }
+.decryptor { border-color: #ff5555; }
+.encryptor { border-color: #00ffcc; }

@@ -14,6 +14,7 @@ const files = {
   "clue1.txt": "archive shard: zt",
   "clue2.txt": "fragment recovered: ke",
   "clue3.txt": "residual packet: tl",
+  "cipher_note.txt": "encrypted memo: --ctr ltos gr zgf zlxkz --ctr",
   "devlog.txt": "DEV_03: if this reaches anyone, do NOT run override",
   "manifest.txt": "active threads: DEV_00 DEV_01 DEV_02 DEV_03 DEV_04 DEV_05",
 };
@@ -67,7 +68,7 @@ function handleCommand(raw) {
 
   switch (cmd.toLowerCase()) {
     case "help":
-      print("Commands: help, ls, cat <file>, unlock final_clue.txt <key>, override, clear");
+      print("Commands: help, ls, cat <file>, unlock final_clue.txt <key>, override, encrypt <text>, decrypt <text>, cipherlab, clear");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -84,6 +85,15 @@ function handleCommand(raw) {
       break;
     case "override":
       doOverride();
+      break;
+    case "encrypt":
+      runEncrypt(args);
+      break;
+    case "decrypt":
+      runDecrypt(args);
+      break;
+    case "cipherlab":
+      print("Open cipher.html for the full encrypt/decrypt utility panels.", "logline-sys");
       break;
     case "clear":
       output.innerHTML = "";
@@ -152,6 +162,50 @@ function doOverride() {
   setTimeout(() => {
     window.location.href = "hidden.html";
   }, 1800);
+}
+
+function getMaps() {
+  const encMap = {
+    a: "q", b: "w", c: "e", d: "r", e: "t", f: "y", g: "u", h: "i", i: "o", j: "p",
+    k: "a", l: "s", m: "d", n: "f", o: "g", p: "h", q: "j", r: "k", s: "l", t: "z",
+    u: "x", v: "c", w: "v", x: "b", y: "n", z: "m",
+  };
+  const decMap = Object.fromEntries(Object.entries(encMap).map(([k, v]) => [v, k]));
+  const numEnc = { "1": "4", "2": "2", "3": "5", "4": "8", "5": "1", "6": "6", "7": "9", "8": "3", "9": "7", "0": "-" };
+  const numDec = Object.fromEntries(Object.entries(numEnc).map(([k, v]) => [v, k]));
+  return { encMap, decMap, numEnc, numDec };
+}
+
+function encryptText(text) {
+  const { encMap, numEnc } = getMaps();
+  return text.toLowerCase().split(" ").map((word) => {
+    const converted = word.split("").map((c) => encMap[c] || numEnc[c] || c).join("");
+    return converted.split("").reverse().join("");
+  }).join(" ");
+}
+
+function decryptText(text) {
+  const { decMap, numDec } = getMaps();
+  return text.toLowerCase().split(" ").map((word) => {
+    const reversed = word.split("").reverse().join("");
+    return reversed.split("").map((c) => decMap[c] || numDec[c] || c).join("");
+  }).join(" ");
+}
+
+function runEncrypt(args) {
+  if (!args.length) {
+    print("usage: encrypt <text>", "error");
+    return;
+  }
+  print(encryptText(args.join(" ")), "success");
+}
+
+function runDecrypt(args) {
+  if (!args.length) {
+    print("usage: decrypt <text>", "error");
+    return;
+  }
+  print(decryptText(args.join(" ")), "success");
 }
 
 form.addEventListener("submit", (e) => {

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cipher Sandbox</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="panel">
+    <h2>Cipher Sandbox</h2>
+    <p class="muted">In-world utility page. Use this to decode suspicious files from the terminal.</p>
+
+    <div class="cipher-grid">
+      <section id="decryptor-box" class="cipher-box decryptor">
+        <h3>Decryptor</h3>
+        <textarea id="decIn" placeholder="paste encrypted text"></textarea>
+        <button id="decBtn" class="btn ghost">Decrypt</button>
+        <textarea id="decOut" readonly placeholder="decrypted output"></textarea>
+      </section>
+
+      <section id="encryptor-box" class="cipher-box encryptor">
+        <h3>Encryptor</h3>
+        <textarea id="encIn" placeholder="type plain text"></textarea>
+        <button id="encBtn" class="btn ghost">Encrypt</button>
+        <textarea id="encOut" readonly placeholder="encrypted output"></textarea>
+      </section>
+    </div>
+
+    <p><a href="terminal.html">← return to terminal</a></p>
+  </main>
+
+  <script src="cipher-tools.js"></script>
+</body>
+</html>

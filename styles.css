@@ -156,3 +156,33 @@ textarea {
 
 .owner-gated { display: none; }
 .owner-auth-ok .owner-gated { display: block; }
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.chat-log {
+  min-height: 320px;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  padding: .8rem;
+  background: #020304;
+  margin: 1rem 0;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+
+.users-table th,
+.users-table td {
+  border: 1px solid var(--line);
+  padding: .5rem;
+  text-align: left;
+}

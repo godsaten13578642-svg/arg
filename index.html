@@ -3,19 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ORPHEUS NODE</title>
+  <title>ORPHEUS Access</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="center-panel">
-    <p class="system-tag">ORPHEUS NODE // ARCHIVE ENTRY</p>
-    <h1>Do not refresh.</h1>
-    <p class="muted">If you are seeing this page, the relay found you.</p>
-    <div class="btn-row">
-      <a class="btn" href="login.html">Enter Terminal</a>
-      <a class="btn ghost" href="terminal.html">Direct Terminal</a>
+  <main class="panel">
+    <p class="system-tag">ORPHEUS NODE // ACCESS CONTROL</p>
+    <h1>Login or Sign Up</h1>
+    <p class="muted">Every player must create an account. Progress and promotions are tied to your username.</p>
+
+    <div class="auth-grid">
+      <section>
+        <h3>Login</h3>
+        <form id="login-form" class="login-grid">
+          <label for="login-username">username</label><input id="login-username" required />
+          <label for="login-password">password</label><input id="login-password" type="password" required />
+          <button class="btn" type="submit">Enter</button><span id="login-msg" class="error"></span>
+        </form>
+      </section>
+
+      <section>
+        <h3>Sign Up</h3>
+        <form id="signup-form" class="login-grid">
+          <label for="signup-username">username</label><input id="signup-username" required />
+          <label for="signup-password">password</label><input id="signup-password" type="password" required />
+          <button class="btn ghost" type="submit">Create Account</button><span id="signup-msg" class="error"></span>
+        </form>
+      </section>
     </div>
-    <p class="muted tiny">Mirror links: <a href="admin.html">/admin</a> · <a href="dev.html">/dev</a> · <a href="mod.html">/mod</a></p>
+
+    <p class="tiny muted">Promotion keys found in the ARG can raise your clearance level.</p>
   </main>
+
+  <script src="auth-session.js"></script>
+  <script src="login.js"></script>
 </body>
 </html>

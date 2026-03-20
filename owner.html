@@ -5,40 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Owner Dashboard</title>
   <link rel="stylesheet" href="styles.css" />
-  <script>
-    (function () {
-      const authUntil = Number(sessionStorage.getItem("orpheus_owner_auth_until") || "0");
-      if (!authUntil || Date.now() > authUntil) {
-        window.location.replace("owner-login.html");
-        return;
-      }
-      document.documentElement.classList.add("owner-auth-ok");
-    })();
-  </script>
 </head>
 <body>
-  <main class="panel owner-gated">
+  <main class="panel">
     <h2>Owner Dashboard</h2>
-    <p class="muted">Session analytics are local to this deployment/browser unless you connect a backend.</p>
+    <p class="muted">Visible only to owner account. User list + progress analytics.</p>
 
-    <div class="stats-grid">
-      <div class="stat"><h3>Sessions</h3><p id="sessionsStarted">0</p></div>
-      <div class="stat"><h3>Final Unlocks</h3><p id="finalUnlocks">0</p></div>
-      <div class="stat"><h3>Overrides</h3><p id="overridesRun">0</p></div>
-      <div class="stat"><h3>Cipher Traces</h3><p id="cipherTraces">0</p></div>
-    </div>
-
-    <h3>File Reads</h3>
-    <ul id="fileReads"></ul>
-
-    <p class="tiny muted">Last player activity: <span id="lastSeenAt">never</span></p>
+    <table class="users-table" id="users-table">
+      <thead>
+        <tr>
+          <th>User</th><th>Role</th><th>Level</th><th>Sessions</th><th>Final</th><th>Overrides</th><th>Chat</th><th>Last Seen</th>
+        </tr>
+      </thead>
+      <tbody id="users-body"></tbody>
+    </table>
 
     <div class="btn-row">
       <button id="ownerLogout" class="btn ghost" type="button">Log Out</button>
-      <a class="btn ghost" href="index.html">Back to Site</a>
+      <a class="btn ghost" href="chat.html">Open Chat</a>
     </div>
   </main>
 
+  <script src="auth-session.js"></script>
   <script src="owner-dashboard.js"></script>
 </body>
 </html>

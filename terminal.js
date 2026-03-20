@@ -16,54 +16,27 @@ const state = {
   seenCipherNote: false,
 };
 
-const METRIC_KEY = "orpheus_metrics_v1";
-
-function readMetrics() {
-  const base = {
-    sessionsStarted: 0,
-    fileReads: {},
-    finalUnlocks: 0,
-    overridesRun: 0,
-    cipherTraces: 0,
-    lastSeenAt: null,
-  };
-  try {
-    const raw = localStorage.getItem(METRIC_KEY);
-    if (!raw) return base;
-    return { ...base, ...JSON.parse(raw) };
-  } catch {
-    return base;
-  }
-}
-
-function writeMetrics(updateFn) {
-  const current = readMetrics();
-  const next = updateFn(current);
-  next.lastSeenAt = new Date().toISOString();
-  localStorage.setItem(METRIC_KEY, JSON.stringify(next));
-}
-
 function trackSessionStart() {
-  writeMetrics((m) => ({ ...m, sessionsStarted: m.sessionsStarted + 1 }));
+  window.argAuth.recordProgress((m) => ({ ...m, sessionsStarted: (m.sessionsStarted || 0) + 1 }));
 }
 
 function trackFileRead(name) {
-  writeMetrics((m) => ({
+  window.argAuth.recordProgress((m) => ({
     ...m,
-    fileReads: { ...m.fileReads, [name]: (m.fileReads[name] || 0) + 1 },
+    filesRead: { ...(m.filesRead || {}), [name]: ((m.filesRead || {})[name] || 0) + 1 },
   }));
 }
 
 function trackFinalUnlock() {
-  writeMetrics((m) => ({ ...m, finalUnlocks: m.finalUnlocks + 1 }));
+  window.argAuth.recordProgress((m) => ({ ...m, finalUnlocks: (m.finalUnlocks || 0) + 1 }));
 }
 
 function trackOverride() {
-  writeMetrics((m) => ({ ...m, overridesRun: m.overridesRun + 1 }));
+  window.argAuth.recordProgress((m) => ({ ...m, overridesRun: (m.overridesRun || 0) + 1 }));
 }
 
 function trackCipherTrace() {
-  writeMetrics((m) => ({ ...m, cipherTraces: m.cipherTraces + 1 }));
+  window.argAuth.recordProgress((m) => ({ ...m, cipherTraces: (m.cipherTraces || 0) + 1 }));
 }
 
 const files = {
@@ -130,6 +103,8 @@ function handleCommand(raw) {
       print("Commands: help, ls, cat <file>, clear");
       if (session.level >= 2) print("Level 2 unlock: encrypt <text>, decrypt <text>, unlock final_clue.txt <key>, cipherlab, trace");
       if (session.level >= 3) print("Level 3 unlock: override");
+      if (session.level >= 4) print("Owner unlock: owner");
+      print("Global: promote <key>, chat");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -167,6 +142,17 @@ function handleCommand(raw) {
       break;
     case "clear":
       output.innerHTML = "";
+      break;
+    case "promote":
+      runPromote(args);
+      break;
+    case "chat":
+      print("Opening shared relay chat...", "logline-sys");
+      window.location.href = "chat.html";
+      break;
+    case "owner":
+      if (!requireLevel(4, "owner")) break;
+      window.location.href = "owner.html";
       break;
     default:
       print(`command not recognized: ${cmd}`, "error");
@@ -301,6 +287,19 @@ function requireLevel(level, command) {
     return false;
   }
   return true;
+}
+
+function runPromote(args) {
+  if (!args.length) {
+    print("usage: promote <promotion-key>", "error");
+    return;
+  }
+  const result = window.argAuth.promoteCurrent(args[0]);
+  if (!result.ok) {
+    print(`promotion failed: ${result.error}`, "error");
+    return;
+  }
+  print(`promotion successful: now ${result.role} (level ${result.level})`, "success");
 }
 
 form.addEventListener("submit", (e) => {

@@ -1,21 +1,38 @@
 (function () {
-  const form = document.getElementById("access-form");
-  if (!form || !window.argAuth) return;
+  if (!window.argAuth) return;
 
-  const msg = document.getElementById("login-msg");
+  const loginForm = document.getElementById("login-form");
+  const signupForm = document.getElementById("signup-form");
+  const loginMsg = document.getElementById("login-msg");
+  const signupMsg = document.getElementById("signup-msg");
 
-  form.addEventListener("submit", (e) => {
+  function getNext() {
+    return new URLSearchParams(window.location.search).get("next") || "terminal.html";
+  }
+
+  loginForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-
-    const session = window.argAuth.authenticate(username, password);
+    const username = document.getElementById("login-username").value;
+    const password = document.getElementById("login-password").value;
+    const session = await window.argAuth.authenticate(username, password);
     if (!session) {
-      msg.textContent = "Access denied: invalid credentials.";
+      loginMsg.textContent = "Access denied.";
       return;
     }
+    window.location.href = getNext();
+  });
 
-    const next = new URLSearchParams(window.location.search).get("next") || "terminal.html";
-    window.location.href = next;
+  signupForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("signup-username").value;
+    const password = document.getElementById("signup-password").value;
+    const result = await window.argAuth.signup(username, password);
+    if (!result.ok) {
+      signupMsg.textContent = result.error;
+      return;
+    }
+    signupMsg.className = "success";
+    signupMsg.textContent = "Account created. You can log in now.";
+    signupForm.reset();
   });
 })();

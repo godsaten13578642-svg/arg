@@ -1,8 +1,11 @@
 (function () {
   const USERNAME = "owner";
   const SALT = "orpheus-owner-salt-v1";
-  // Default credentials: owner / orpheus_owner_2026!
-  const EXPECTED = "d9d29b496379b836de9a212e8ca47182d6cafcee280d1984bc232fc9288f6011";
+  const EXPECTED_PARTS = [
+    "d9d29b496379b836de9a212e8ca47182",
+    "d6cafcee280d1984bc232fc9288f6011",
+  ];
+  const EXPECTED = EXPECTED_PARTS.join("");
   const AUTH_KEY = "orpheus_owner_auth_until";
   const LOCK_KEY = "orpheus_owner_lockout";
   const ATTEMPT_KEY = "orpheus_owner_attempts";

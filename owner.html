@@ -5,9 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Owner Dashboard</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function () {
+      const authUntil = Number(sessionStorage.getItem("orpheus_owner_auth_until") || "0");
+      if (!authUntil || Date.now() > authUntil) {
+        window.location.replace("owner-login.html");
+        return;
+      }
+      document.documentElement.classList.add("owner-auth-ok");
+    })();
+  </script>
 </head>
 <body>
-  <main class="panel">
+  <main class="panel owner-gated">
     <h2>Owner Dashboard</h2>
     <p class="muted">Session analytics are local to this deployment/browser unless you connect a backend.</p>
 

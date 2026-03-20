@@ -153,3 +153,6 @@ textarea {
   font-size: 1.6rem;
   color: var(--accent);
 }
+
+.owner-gated { display: none; }
+.owner-auth-ok .owner-gated { display: block; }

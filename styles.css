@@ -197,6 +197,8 @@ textarea {
 .tiny-btn {
   padding: .3rem .6rem;
   font-size: .8rem;
+  border-color: #ff5a7a;
+  color: #ff5a7a;
 }
 
 .rank-info {

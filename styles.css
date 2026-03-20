@@ -186,3 +186,42 @@ textarea {
   padding: .5rem;
   text-align: left;
 }
+
+.chat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .8rem;
+}
+
+.tiny-btn {
+  padding: .3rem .6rem;
+  font-size: .8rem;
+}
+
+.rank-info {
+  border: 1px solid var(--line);
+  background: #04070c;
+  padding: .6rem .8rem;
+  margin-bottom: .8rem;
+}
+
+.rank-info ul { margin: .3rem 0 0; padding-left: 1.1rem; }
+
+.rank-dot {
+  display: inline-block;
+  width: .6rem;
+  height: .6rem;
+  border-radius: 50%;
+  margin-right: .4rem;
+}
+
+.rank-observer { color: #9fd9ff; }
+.rank-moderator { color: #9bff70; }
+.rank-admin { color: #ffd166; }
+.rank-owner { color: #ff5a7a; }
+
+.rank-dot.rank-observer { background: #9fd9ff; }
+.rank-dot.rank-moderator { background: #9bff70; }
+.rank-dot.rank-admin { background: #ffd166; }
+.rank-dot.rank-owner { background: #ff5a7a; }

@@ -21,7 +21,10 @@
 
   function render() {
     const messages = readChat();
-    log.innerHTML = messages.map((m) => `<p><strong>${m.user}</strong>: ${m.text}</p>`).join("");
+    log.innerHTML = messages.map((m) => {
+      const rank = m.role || "observer";
+      return `<p><strong class="rank-${rank}">${m.user}</strong>: ${m.text}</p>`;
+    }).join("");
     log.scrollTop = log.scrollHeight;
   }
 
@@ -30,7 +33,7 @@
     const text = input.value.trim();
     if (!text) return;
     const messages = readChat();
-    messages.push({ user: session.displayName, text, at: Date.now() });
+    messages.push({ user: session.displayName, role: session.role, text, at: Date.now() });
     writeChat(messages);
     window.argAuth.recordProgress((p) => ({ ...p, chatsSent: (p.chatsSent || 0) + 1 }));
     input.value = "";
@@ -39,4 +42,9 @@
 
   setInterval(render, 1500);
   render();
+
+  document.getElementById("rankInfoBtn")?.addEventListener("click", () => {
+    const panel = document.getElementById("rankInfo");
+    panel.hidden = !panel.hidden;
+  });
 })();

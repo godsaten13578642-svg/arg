@@ -267,3 +267,6 @@ textarea {
   padding: .55rem;
   cursor: pointer;
 }
+
+.owner-locked { display: none; }
+.ceo-ok .owner-locked { display: block; }

@@ -5,9 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CEO Console</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function () {
+      try {
+        const raw = sessionStorage.getItem("orpheus_session_v3");
+        const session = raw ? JSON.parse(raw) : null;
+        if (!session || !session.expiresAt || Date.now() > session.expiresAt || session.level !== 24) {
+          window.location.replace("index.html");
+          return;
+        }
+        document.documentElement.classList.add("ceo-ok");
+      } catch {
+        window.location.replace("index.html");
+      }
+    })();
+  </script>
 </head>
 <body>
-  <main class="panel">
+  <main class="panel owner-locked">
     <h2>ORPHEUS_CEO Console</h2>
     <p class="muted">Private control center. Manage players, chat moderation, and exports.</p>
 

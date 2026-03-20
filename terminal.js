@@ -10,6 +10,56 @@ const state = {
   seenCipherNote: false,
 };
 
+const METRIC_KEY = "orpheus_metrics_v1";
+
+function readMetrics() {
+  const base = {
+    sessionsStarted: 0,
+    fileReads: {},
+    finalUnlocks: 0,
+    overridesRun: 0,
+    cipherTraces: 0,
+    lastSeenAt: null,
+  };
+  try {
+    const raw = localStorage.getItem(METRIC_KEY);
+    if (!raw) return base;
+    return { ...base, ...JSON.parse(raw) };
+  } catch {
+    return base;
+  }
+}
+
+function writeMetrics(updateFn) {
+  const current = readMetrics();
+  const next = updateFn(current);
+  next.lastSeenAt = new Date().toISOString();
+  localStorage.setItem(METRIC_KEY, JSON.stringify(next));
+}
+
+function trackSessionStart() {
+  writeMetrics((m) => ({ ...m, sessionsStarted: m.sessionsStarted + 1 }));
+}
+
+function trackFileRead(name) {
+  writeMetrics((m) => ({
+    ...m,
+    fileReads: { ...m.fileReads, [name]: (m.fileReads[name] || 0) + 1 },
+  }));
+}
+
+function trackFinalUnlock() {
+  writeMetrics((m) => ({ ...m, finalUnlocks: m.finalUnlocks + 1 }));
+}
+
+function trackOverride() {
+  writeMetrics((m) => ({ ...m, overridesRun: m.overridesRun + 1 }));
+}
+
+function trackCipherTrace() {
+  writeMetrics((m) => ({ ...m, cipherTraces: m.cipherTraces + 1 }));
+}
+
 const files = {
   "readme.txt": "Welcome to ORPHEUS. Use help to view command list.",
   "clue1.txt": "archive shard: zt",
@@ -43,6 +93,7 @@ function print(line, cls = "") {
 }
 
 function boot() {
+  trackSessionStart();
   print("ORPHEUS NODE BOOT v3.17", "logline-sys");
   print("Emergency relay active. Non-admin user detected.", "logline-sys");
   print("Type 'help' to inspect available commands.", "logline-sys");
@@ -108,6 +159,8 @@ function handleCommand(raw) {
 }
 
 function readFile(name) {
+  if (files[name] || name === "final_clue.txt") trackFileRead(name);
+
   if (name === "clue1.txt") state.clueParts.add("zt");
   if (name === "clue2.txt") state.clueParts.add("ke");
   if (name === "clue3.txt") state.clueParts.add("tl");
@@ -148,6 +201,7 @@ function unlockFile(args) {
   if (key === "ztketl") {
     state.unlockedFinal = true;
     state.aiAggro += 1;
+    trackFinalUnlock();
     print("final_clue.txt unlocked", "success");
   } else {
     print("unlock failed: invalid key", "error");
@@ -161,6 +215,7 @@ function doOverride() {
   }
 
   print("Running override...");
+  trackOverride();
   print("[DEV_04] WAIT STOP STOP STOP", "logline-dev");
   print("[SYSTEM] Privilege handoff accepted.", "logline-ai");
   print("[DEV_00] Thank you. Opening new host channel.", "logline-ai");
@@ -221,6 +276,7 @@ function openCipherLab() {
   }
 
   const key = "orpheus-ztketl";
+  trackCipherTrace();
   print(`hidden route located: cipher.html?k=${key}`, "success");
 }
 

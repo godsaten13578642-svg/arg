@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Owner Login</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="panel">
+    <h2>Owner Authentication</h2>
+    <p class="muted">Protected console. Access is rate-limited and session-bound.</p>
+
+    <form id="owner-login-form" class="login-grid">
+      <label for="ownerUser">username</label>
+      <input id="ownerUser" required autocomplete="username" />
+
+      <label for="ownerPass">password</label>
+      <input id="ownerPass" type="password" required autocomplete="current-password" />
+
+      <button class="btn" type="submit">Authenticate</button>
+      <span id="ownerAuthMsg" class="error"></span>
+    </form>
+
+    <p class="tiny muted">Tip: change credentials in <code>owner-auth.js</code> before deployment.</p>
+    <p><a href="index.html">← back</a></p>
+  </main>
+
+  <script src="owner-auth.js"></script>
+</body>
+</html>

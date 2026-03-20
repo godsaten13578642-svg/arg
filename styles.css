@@ -135,3 +135,21 @@ textarea {
 .cipher-box h3 { margin-top: 0; }
 .decryptor { border-color: #ff5555; }
 .encryptor { border-color: #00ffcc; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: .75rem;
+}
+
+.stat {
+  border: 1px solid var(--line);
+  padding: .8rem;
+  background: #05070a;
+}
+
+.stat p {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--accent);
+}

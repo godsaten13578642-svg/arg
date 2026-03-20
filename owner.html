@@ -1,15 +1,34 @@
 <!doctype html>
-<html lang="en"><head>
-<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Owner Panel (Out of Game)</title><link rel="stylesheet" href="styles.css" /></head>
-<body><main class="panel">
-<h2>Owner Panel</h2>
-<p>This page is intentionally out-of-ARG for maintenance notes.</p>
-<ul>
-<li>Adjust dialogue in <code>terminal.js</code>.</li>
-<li>Add branching endings by storing session state in <code>localStorage</code>.</li>
-<li>Cipher utility route is now token-gated and surfaced by terminal trace flow.</li>
-<li>Optional: hide this route in production deploy.</li>
-</ul>
-<p><a href="index.html">Back</a></p>
-</main></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Owner Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="panel">
+    <h2>Owner Dashboard</h2>
+    <p class="muted">Session analytics are local to this deployment/browser unless you connect a backend.</p>
+
+    <div class="stats-grid">
+      <div class="stat"><h3>Sessions</h3><p id="sessionsStarted">0</p></div>
+      <div class="stat"><h3>Final Unlocks</h3><p id="finalUnlocks">0</p></div>
+      <div class="stat"><h3>Overrides</h3><p id="overridesRun">0</p></div>
+      <div class="stat"><h3>Cipher Traces</h3><p id="cipherTraces">0</p></div>
+    </div>
+
+    <h3>File Reads</h3>
+    <ul id="fileReads"></ul>
+
+    <p class="tiny muted">Last player activity: <span id="lastSeenAt">never</span></p>
+
+    <div class="btn-row">
+      <button id="ownerLogout" class="btn ghost" type="button">Log Out</button>
+      <a class="btn ghost" href="index.html">Back to Site</a>
+    </div>
+  </main>
+
+  <script src="owner-dashboard.js"></script>
+</body>
+</html>

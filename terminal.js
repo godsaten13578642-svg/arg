@@ -117,6 +117,7 @@ function handleCommand(raw) {
       print("Global: promote <key>, chat, observe, whoami");
       print("Hidden utility: decodebin <8-bit binary groups>, decode64 <base64>");
       print("Progression: missions, progress");
+      print("Rank tools: rankhub, rankstatus, rewards");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -183,6 +184,15 @@ function handleCommand(raw) {
       break;
     case "progress":
       showProgress();
+      break;
+    case "rankhub":
+      openRankHub();
+      break;
+    case "rankstatus":
+      showRankStatus();
+      break;
+    case "rewards":
+      showRewards();
       break;
     default:
       print(`command not recognized: ${cmd}`, "error");
@@ -416,6 +426,45 @@ function showProgress() {
   print(`Key inventory: ${p.keys.length ? p.keys.join(" | ") : "empty"}`);
   const next = window.argAuth.nextPromotionKey?.();
   if (next) print(`Next promotion target: ${next}`, "logline-sys");
+}
+
+function showRankStatus() {
+  print(`Current rank: ${session.rankName} (L${session.level})`, "success");
+  if (session.level < 3) print("Next hub unlock: Mod Tier at L3.");
+  else if (session.level < 6) print("Next hub unlock: Staff Tier at L6.");
+  else if (session.level < 19) print("Next hub unlock: Dev Tier at L19.");
+  else if (session.level < 24) print("Next hub unlock: CEO Tier at L24.");
+  else print("All hub tiers unlocked.");
+}
+
+function openRankHub() {
+  if (session.level >= 24) {
+    window.location.href = "rank_ceo.html";
+    return;
+  }
+  if (session.level >= 19) {
+    window.location.href = "rank_dev.html";
+    return;
+  }
+  if (session.level >= 6) {
+    window.location.href = "rank_staff.html";
+    return;
+  }
+  if (session.level >= 3) {
+    window.location.href = "rank_mod.html";
+    return;
+  }
+  print("rankhub locked until level 3.", "error");
+}
+
+function showRewards() {
+  const p = window.argAuth.getProgressSummary?.();
+  if (!p) return print("no reward data", "error");
+  const rewards = [];
+  if (p.milestones.includes("read_threads")) rewards.push("Thread Reader");
+  if (p.milestones.includes("observe_relay")) rewards.push("Relay Observer");
+  if (p.milestones.includes("unlock_final")) rewards.push("Final Gatebreaker");
+  print(`Unlocked rewards: ${rewards.length ? rewards.join(", ") : "none yet"}`);
 }
 
 form.addEventListener("submit", (e) => {

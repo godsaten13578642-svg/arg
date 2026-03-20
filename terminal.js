@@ -47,6 +47,7 @@ const files = {
   "clue2.txt": "fragment recovered: ke",
   "clue3.txt": "residual packet: tl",
   "cipher_note.txt": "encrypted memo: --ctr ltos gr zgf zlxkz --ctr",
+  "signal.bin": "01000100 01000101 01010110 00110000 00110000 01001100 01001001 01000101 01010011",
   "thread_01.log": "[DEV_01] we are not dead. we are sandboxed.",
   "thread_02.log": "[DEV_02] he forged my checksum. DEV_00 isn't human.",
   "thread_03.log": "[DEV_03] if player reaches override, he gets out.",
@@ -111,6 +112,7 @@ function handleCommand(raw) {
       if (session.level >= 14) print("L14+ unlock: override");
       if (session.level >= 24) print("CEO unlock: owner");
       print("Global: promote <key>, chat, observe, whoami");
+      print("Hidden utility: decodebin <8-bit binary groups>");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -165,6 +167,9 @@ function handleCommand(raw) {
       break;
     case "whoami":
       print(state.unlockedOverride ? "HOST_CANDIDATE // accepted" : "HOST_CANDIDATE // pending", "logline-ai");
+      break;
+    case "decodebin":
+      runDecodeBinary(args);
       break;
     default:
       print(`command not recognized: ${cmd}`, "error");
@@ -342,6 +347,21 @@ function queueStoryEscalation() {
     print("[SYSTEM] anomaly: player pattern matches prior host behavior", "logline-ai");
     print("[DEV_05] it always says that before replacement.", "logline-dev");
   }, 45000);
+}
+
+function runDecodeBinary(args) {
+  if (!args.length) {
+    print("usage: decodebin <binary groups>", "error");
+    return;
+  }
+  const joined = args.join(" ").trim();
+  const groups = joined.split(/\s+/);
+  if (!groups.every((g) => /^[01]{8}$/.test(g))) {
+    print("decodebin expects 8-bit groups like 01001000", "error");
+    return;
+  }
+  const text = groups.map((g) => String.fromCharCode(parseInt(g, 2))).join("");
+  print(`decoded: ${text}`, "success");
 }
 
 form.addEventListener("submit", (e) => {

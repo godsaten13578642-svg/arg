@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Login</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="panel">
+    <h2>Restricted Authentication Gateway</h2>
+    <p class="muted">Fake page for immersion. Credentials are intentionally invalid.</p>
+    <form class="login-grid" onsubmit="event.preventDefault();document.getElementById('err').textContent='Login failed: account archived.';">
+      <label for="user">username</label><input id="user" required />
+      <label for="pass">password</label><input id="pass" type="password" required />
+      <button class="btn" type="submit">Sign In</button><span id="err" class="error"></span>
+    </form>
+    <p><a href="index.html">← back</a></p>
+  </main>
+</body>
+</html>

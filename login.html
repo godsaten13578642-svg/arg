@@ -8,14 +8,27 @@
 </head>
 <body>
   <main class="panel">
-    <h2>Restricted Authentication Gateway</h2>
-    <p class="muted">Fake page for immersion. Credentials are intentionally invalid.</p>
-    <form class="login-grid" onsubmit="event.preventDefault();document.getElementById('err').textContent='Login failed: account archived.';">
-      <label for="user">username</label><input id="user" required />
-      <label for="pass">password</label><input id="pass" type="password" required />
-      <button class="btn" type="submit">Sign In</button><span id="err" class="error"></span>
+    <h2>Access Gateway</h2>
+    <p class="muted">You must log in before accessing the terminal.</p>
+
+    <form id="access-form" class="login-grid">
+      <label for="username">username</label><input id="username" required />
+      <label for="password">password</label><input id="password" type="password" required />
+      <button class="btn" type="submit">Sign In</button><span id="login-msg" class="error"></span>
     </form>
+
+    <h3>Clearance Levels</h3>
+    <ul>
+      <li><code>observer</code> (Level 1): explore files and logs.</li>
+      <li><code>moderator</code> (Level 2): gains cipher + unlock commands.</li>
+      <li><code>admin</code> (Level 3): gains override execution.</li>
+    </ul>
+
+    <p class="tiny muted">(For owner dashboard access, use hidden owner login route.)</p>
     <p><a href="index.html">← back</a></p>
   </main>
+
+  <script src="auth-session.js"></script>
+  <script src="login.js"></script>
 </body>
 </html>

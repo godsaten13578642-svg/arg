@@ -1,6 +1,12 @@
 const output = document.getElementById("output");
 const form = document.getElementById("terminal-form");
 const input = document.getElementById("cmd");
+const statusNode = document.getElementById("status");
+
+const session = window.argAuth?.requireSession({ minLevel: 1, redirect: "login.html" });
+if (!session) {
+  throw new Error("No active session.");
+}
 
 const state = {
   unlockedFinal: false,
@@ -93,6 +99,7 @@ function print(line, cls = "") {
 }
 
 function boot() {
+  statusNode.textContent = `session: ${session.role} (L${session.level})`;
   trackSessionStart();
   print("ORPHEUS NODE BOOT v3.17", "logline-sys");
   print("Emergency relay active. Non-admin user detected.", "logline-sys");
@@ -120,7 +127,9 @@ function handleCommand(raw) {
 
   switch (cmd.toLowerCase()) {
     case "help":
-      print("Commands: help, ls, cat <file>, unlock final_clue.txt <key>, override, clear");
+      print("Commands: help, ls, cat <file>, clear");
+      if (session.level >= 2) print("Level 2 unlock: encrypt <text>, decrypt <text>, unlock final_clue.txt <key>, cipherlab, trace");
+      if (session.level >= 3) print("Level 3 unlock: override");
       break;
     case "ls":
       print(Object.keys(files).concat(state.unlockedFinal ? ["final_clue.txt"] : []).join("  "));
@@ -133,21 +142,27 @@ function handleCommand(raw) {
       readFile(args[0]);
       break;
     case "unlock":
+      if (!requireLevel(2, "unlock")) break;
       unlockFile(args);
       break;
     case "override":
+      if (!requireLevel(3, "override")) break;
       doOverride();
       break;
     case "encrypt":
+      if (!requireLevel(2, "encrypt")) break;
       runEncrypt(args);
       break;
     case "decrypt":
+      if (!requireLevel(2, "decrypt")) break;
       runDecrypt(args);
       break;
     case "cipherlab":
+      if (!requireLevel(2, "cipherlab")) break;
       openCipherLab();
       break;
     case "trace":
+      if (!requireLevel(2, "trace")) break;
       openCipherLab();
       break;
     case "clear":
@@ -278,6 +293,14 @@ function openCipherLab() {
   const key = "orpheus-ztketl";
   trackCipherTrace();
   print(`hidden route located: cipher.html?k=${key}`, "success");
+}
+
+function requireLevel(level, command) {
+  if (session.level < level) {
+    print(`permission denied: ${command} requires clearance level ${level}`, "error");
+    return false;
+  }
+  return true;
 }
 
 form.addEventListener("submit", (e) => {

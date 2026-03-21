@@ -61,12 +61,12 @@
         <button class="btn ghost inject-dev" data-dev="DEV_05" type="button">DEV05 Talk</button>
         <button class="btn ghost inject-dev" data-dev="SYSTEM" type="button">SYSTEM Interrupt</button>
       </div>
-      <div class="panel" style="margin:1rem 0 0; padding:1rem;">
+      <div class="panel dev00-custom-panel">
         <h4>DEV00 Custom Message</h4>
-        <form id="dev00CustomForm" class="login-grid">
-          <label for="dev00CustomText">message</label>
-          <input id="dev00CustomText" type="text" maxlength="280" placeholder="Type what DEV00 should say..." />
-          <button id="dev00CustomSend" class="btn ghost" type="submit">Send as DEV00</button><span></span>
+        <form id="dev00CustomForm" class="dev00-custom-form">
+          <label for="dev00CustomText">Message</label>
+          <textarea id="dev00CustomText" maxlength="280" placeholder="Type what DEV00 should say..."></textarea>
+          <button id="dev00CustomSend" class="btn ghost" type="submit">Send as DEV00</button>
         </form>
       </div>
       <p id="chatToolsMsg" class="muted tiny"></p>

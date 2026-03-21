@@ -175,6 +175,26 @@ textarea {
   margin: 1rem 0;
 }
 
+.dev00-custom-panel {
+  margin: 1rem 0 0;
+  padding: 1rem;
+}
+
+.dev00-custom-form {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  max-width: 560px;
+}
+
+.dev00-custom-form textarea {
+  min-height: 70px;
+}
+
+.dev00-custom-form button {
+  align-self: flex-start;
+}
+
 .users-table {
   width: 100%;
   border-collapse: collapse;

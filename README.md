@@ -1,57 +1,44 @@
 # ORPHEUS ARG
 
-This app is set up to be **global and multi-device by default** when you deploy the whole project on a Node-capable host so the browser and shared API run from the same origin.
+This app is set up to be **global and multi-device by default** with **Firebase Hosting + Firebase Realtime Database**.
 
-## Run locally
+## What to configure
+
+1. Create a Firebase project.
+2. Enable **Realtime Database**.
+3. Copy `firebase-config.example.js` to `firebase-config.js`.
+4. Put your Realtime Database URL in `firebase-config.js`.
+5. Copy `.firebaserc.example` to `.firebaserc` and set your Firebase project id.
+6. Deploy with Firebase Hosting.
+
+## Local run
+
+You can still preview locally with any static server, for example:
 
 ```bash
-npm install
-npm start
+python -m http.server 3000
 ```
 
 Then open `http://localhost:3000`.
 
-## Render deploy
+## Firebase deploy
 
-This repo now includes a `render.yaml` blueprint for Render.
-
-> Important: Render persistent disks require a paid web service instance, so the blueprint uses the `starter` plan instead of the free plan.
-
-### What it does
-
-- creates a Node web service
-- runs `npm start`
-- uses `/healthz` as the health check
-- mounts a persistent disk at `/var/data` on a paid Render web service
-- stores shared state in `/var/data/global-state.json`
-
-### Render steps
-
-1. Push this repo to GitHub.
-2. In Render, create a **Blueprint** deployment from the repo.
-3. Let Render apply `render.yaml`.
-4. Wait for the first deploy to finish.
-5. Open the Render URL for the site.
-6. Use that same Render URL on every device.
-
-When everyone uses the same Render URL, chat, accounts, and owner dashboard data are shared by default.
-
-## Manual environment
-
-If you deploy somewhere besides Render, set:
-
-- `PORT`: HTTP port for the web server
-- `ORPHEUS_DATA_FILE`: writable path for the persisted shared-state JSON file
-
-## Health check
-
-Use:
-
+```bash
+npm install -g firebase-tools
+firebase login
+firebase deploy
 ```
-/healthz
-```
+
+## Files added for Firebase
+
+- `firebase-config.js`: local Firebase database URL config
+- `firebase-config.example.js`: example config template
+- `firebase.json`: Firebase Hosting + Realtime Database configuration
+- `database.rules.json`: starter Realtime Database rules
+- `.firebaserc.example`: example Firebase project mapping
 
 ## Notes
 
-- Multi-device chat and shared player data depend on the built-in shared API provided by `server.js`.
-- Static-only hosting such as GitHub Pages will not run that API layer.
+- The starter database rules are open for quick setup. Tighten them before public production use.
+- Multi-device chat and shared player data sync through Firebase Realtime Database.
+- The old Node/Render server files are still present, but Firebase is now the intended deployment path.

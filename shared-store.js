@@ -1,9 +1,11 @@
 (function () {
   const API_BASE = "/api/state/";
+  const FIREBASE_ROOT = (window.ORPHEUS_FIREBASE_DB_URL || "").trim();
   const POLL_MS = 2000;
   const EVENT_URL = '/api/events';
   const timers = new Map();
   const listeners = new Map();
+  const streamSources = new Map();
 
 
   let eventSource = null;
@@ -12,11 +14,19 @@
     return (value || "").trim().replace(/\/$/, "");
   }
 
+  function isFirebaseMode() {
+    return !!normalizeRoot(FIREBASE_ROOT);
+  }
+
   function getApiRoot() {
     const configured = window.ORPHEUS_SHARED_API_BASE || window.location.origin;
     return normalizeRoot(configured || window.location.origin);
   }
 
+  function keyUrl(key) {
+    if (isFirebaseMode()) return `${normalizeRoot(FIREBASE_ROOT)}/orpheus/${encodeURIComponent(key)}.json`;
+    return `${getApiRoot()}${API_BASE}${encodeURIComponent(key)}`;
+  }
 
   function notify(key, fallback) {
     const cbs = listeners.get(key) || [];
@@ -24,7 +34,20 @@
     cbs.forEach((callback) => callback(value));
   }
 
-  function ensureEventSource() {
+  function ensureEventSource(key, fallback) {
+    if (isFirebaseMode()) {
+      if (streamSources.has(key) || typeof EventSource !== "function") return;
+      const source = new EventSource(keyUrl(key));
+      const refresh = () => {
+        pull(key, fallback).then(() => notify(key, fallback)).catch(() => {});
+      };
+      source.addEventListener("put", refresh);
+      source.addEventListener("patch", refresh);
+      source.onerror = () => {};
+      streamSources.set(key, source);
+      return;
+    }
+
     if (eventSource || typeof EventSource !== "function") return;
     eventSource = new EventSource(`${getApiRoot()}${EVENT_URL}`);
     eventSource.onmessage = (event) => {
@@ -69,8 +92,8 @@
   }
 
   async function request(key, options = {}) {
-    const response = await fetch(`${getApiRoot()}${API_BASE}${encodeURIComponent(key)}`, {
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(keyUrl(key), {
+      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
       cache: "no-store",
       ...options,
     });
@@ -82,7 +105,8 @@
     const cached = envelope(readCache(key, { value: fallback, updatedAt: 0 }), fallback);
     try {
       const result = await request(key);
-      const merged = normalize(key, result?.item || cached, fallback);
+      const incoming = isFirebaseMode() ? result : (result?.item || cached);
+      const merged = normalize(key, incoming || cached, fallback);
       writeCache(key, merged);
       return merged.value;
     } catch {
@@ -115,7 +139,7 @@
 
     if (!listeners.has(key)) listeners.set(key, []);
     listeners.get(key).push(callback);
-    ensureEventSource();
+    ensureEventSource(key, fallback);
 
     if (!timers.has(key)) {
       timers.set(key, window.setInterval(() => {

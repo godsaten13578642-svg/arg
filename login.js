@@ -5,9 +5,6 @@
   const signupForm = document.getElementById("signup-form");
   const loginMsg = document.getElementById("login-msg");
   const signupMsg = document.getElementById("signup-msg");
-  const sharedServerForm = document.getElementById("shared-server-form");
-  const sharedServerInput = document.getElementById("shared-server-url");
-  const sharedServerMsg = document.getElementById("shared-server-msg");
 
   function getNext() {
     return new URLSearchParams(window.location.search).get("next") || "terminal.html";
@@ -24,15 +21,6 @@
     }
     window.location.href = getNext();
   });
-
-  if (window.argStore && sharedServerForm && sharedServerInput) {
-    sharedServerInput.value = window.argStore.getApiBase();
-    sharedServerForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const saved = window.argStore.setApiBase(sharedServerInput.value);
-      if (sharedServerMsg) sharedServerMsg.textContent = `Saved shared server: ${saved}`;
-    });
-  }
 
   signupForm?.addEventListener("submit", async (e) => {
     e.preventDefault();

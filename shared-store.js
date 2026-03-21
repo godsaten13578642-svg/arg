@@ -1,5 +1,4 @@
 (function () {
-  const API_CONFIG_KEY = "orpheus_api_base";
   const API_BASE = "/api/state/";
   const POLL_MS = 2000;
   const EVENT_URL = '/api/events';
@@ -14,18 +13,8 @@
   }
 
   function getApiRoot() {
-    const configured = window.ORPHEUS_SHARED_API_BASE || localStorage.getItem(API_CONFIG_KEY) || window.location.origin;
+    const configured = window.ORPHEUS_SHARED_API_BASE || window.location.origin;
     return normalizeRoot(configured || window.location.origin);
-  }
-
-  function getApiBase() {
-    return getApiRoot();
-  }
-
-  function setApiBase(value) {
-    const normalized = normalizeRoot(value) || window.location.origin;
-    localStorage.setItem(API_CONFIG_KEY, normalized);
-    return normalized;
   }
 
 
@@ -135,5 +124,5 @@
     }
   }
 
-  window.argStore = { pull, set, getCached, subscribe, getApiBase, setApiBase };
+  window.argStore = { pull, set, getCached, subscribe };
 })();

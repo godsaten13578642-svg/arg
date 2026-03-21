@@ -306,14 +306,3 @@ textarea {
 .owner-rank-editor select {
   min-width: 220px;
 }
-
-
-.shared-config {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line);
-}
-
-.shared-config input {
-  width: 100%;
-}

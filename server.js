@@ -5,7 +5,9 @@ const { URL } = require('url');
 
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data');
-const DATA_FILE = path.join(DATA_DIR, 'global-state.json');
+const DATA_FILE = process.env.ORPHEUS_DATA_FILE
+  ? path.resolve(process.env.ORPHEUS_DATA_FILE)
+  : path.join(DATA_DIR, 'global-state.json');
 const PORT = Number(process.env.PORT || 3000);
 const clients = new Set();
 
@@ -23,7 +25,7 @@ const MIME = {
 };
 
 function ensureDataFile() {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
   if (!fs.existsSync(DATA_FILE)) {
     fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
   }
@@ -87,6 +89,10 @@ function safeFilePath(urlPath) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+
+  if (url.pathname === '/healthz') {
+    return sendJson(res, 200, { ok: true });
+  }
 
   if (url.pathname === '/api/events') {
     res.writeHead(200, {

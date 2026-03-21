@@ -179,6 +179,20 @@
     });
   });
 
+  document.getElementById("dev00CustomForm")?.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const input = document.getElementById("dev00CustomText");
+    const text = (input?.value || "").trim();
+    if (!text) {
+      document.getElementById("chatToolsMsg").textContent = "Enter a custom DEV00 message first.";
+      return;
+    }
+    pushChat("DEV_00", text, devColor.DEV_00 || "#ff5a7a");
+    if (input) input.value = "";
+    document.getElementById("chatToolsMsg").textContent = "Injected custom DEV00 message into relay chat.";
+    renderDetails();
+  });
+
   document.getElementById("ownerLogout").addEventListener("click", () => {
     window.argAuth.clearSession();
     window.location.href = "index.html";

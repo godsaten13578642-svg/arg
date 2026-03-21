@@ -7,16 +7,30 @@
   const form = document.getElementById("chat-form");
   const input = document.getElementById("chat-input");
 
+  const sharedStore = window.argStore;
+
+  function normalizeChat(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.messages)) return payload.messages;
+    return Object.values(payload?.items || {}).sort((a, b) => (a.at || 0) - (b.at || 0));
+  }
+
+  function serializeChat(messages) {
+    return {
+      items: messages.slice(-250).reduce((acc, message) => {
+        const id = message.id || `${message.user || "user"}-${message.at || Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+        acc[id] = { ...message, id };
+        return acc;
+      }, {}),
+    };
+  }
+
   function readChat() {
-    try {
-      return JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
-    } catch {
-      return [];
-    }
+    return normalizeChat(sharedStore?.getCached(CHAT_KEY, { items: {} }));
   }
 
   function writeChat(messages) {
-    localStorage.setItem(CHAT_KEY, JSON.stringify(messages.slice(-250)));
+    sharedStore?.set(CHAT_KEY, serializeChat(messages));
   }
 
   function render() {
@@ -38,7 +52,7 @@
       return;
     }
     const messages = readChat();
-    messages.push({ user: session.displayName, rankKey: session.rankKey, rankColor: session.rankColor, text, at: Date.now() });
+    messages.push({ id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`, user: session.displayName, rankKey: session.rankKey, rankColor: session.rankColor, text, at: Date.now() });
     writeChat(messages);
     window.argAuth.recordProgress((p) => ({ ...p, chatsSent: (p.chatsSent || 0) + 1 }));
     input.value = "";
@@ -49,6 +63,8 @@
   window.addEventListener("storage", (event) => {
     if (event.key === CHAT_KEY || event.key === "orpheus_session_v3") render();
   });
+  sharedStore?.pull(CHAT_KEY, { items: {} }).then(render);
+  sharedStore?.subscribe(CHAT_KEY, { items: {} }, render);
   render();
 
   const legendList = (window.argAuth.RANKS || []).map((r, idx) =>

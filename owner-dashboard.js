@@ -6,16 +6,29 @@
   }
 
   const CHAT_KEY = "orpheus_chat_v1";
+  const sharedStore = window.argStore;
   const playersList = document.getElementById("playersList");
   const playerDetails = document.getElementById("playerDetails");
   let selectedUser = null;
 
+  function normalizeChat(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.messages)) return payload.messages;
+    return Object.values(payload?.items || {}).sort((a, b) => (a.at || 0) - (b.at || 0));
+  }
+
+  function serializeChat(messages) {
+    return {
+      items: messages.slice(-250).reduce((acc, message) => {
+        const id = message.id || `${message.user || "user"}-${message.at || Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+        acc[id] = { ...message, id };
+        return acc;
+      }, {}),
+    };
+  }
+
   function readChat() {
-    try {
-      return JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
-    } catch {
-      return [];
-    }
+    return normalizeChat(sharedStore?.getCached(CHAT_KEY, { items: {} }));
   }
 
   const devCanned = {
@@ -45,7 +58,7 @@
   function pushChat(user, text, color) {
     const logs = readChat();
     logs.push({ user, text, rankColor: color, at: Date.now() });
-    localStorage.setItem(CHAT_KEY, JSON.stringify(logs.slice(-250)));
+    sharedStore?.set(CHAT_KEY, serializeChat(logs));
   }
 
   function users() {
@@ -146,7 +159,7 @@
   }
 
   document.getElementById("clearChatBtn")?.addEventListener("click", () => {
-    localStorage.setItem(CHAT_KEY, "[]");
+    sharedStore?.set(CHAT_KEY, { items: {} });
     document.getElementById("chatToolsMsg").textContent = "Chat logs cleared.";
     renderDetails();
   });
@@ -205,7 +218,15 @@
     }
   });
 
-  wireTabs();
-  renderPlayers();
-  renderDetails();
+  Promise.all([sharedStore?.pull(CHAT_KEY, { items: {} }) || Promise.resolve(), window.argAuth?.syncUsers?.() || Promise.resolve()]).finally(() => {
+    wireTabs();
+    renderPlayers();
+    renderDetails();
+  });
+
+  sharedStore?.subscribe(CHAT_KEY, { items: {} }, renderDetails);
+  sharedStore?.subscribe("orpheus_users_v1", {}, () => {
+    renderPlayers();
+    renderDetails();
+  });
 })();

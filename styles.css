@@ -290,3 +290,19 @@ textarea {
 
 .owner-locked { display: none; }
 .ceo-ok .owner-locked { display: block; }
+
+
+.owner-rank-editor {
+  margin: .9rem 0;
+}
+
+.owner-rank-editor label {
+  display: block;
+  margin-bottom: .35rem;
+  font-size: .85rem;
+  color: var(--muted);
+}
+
+.owner-rank-editor select {
+  min-width: 220px;
+}

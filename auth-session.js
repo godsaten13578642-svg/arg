@@ -1,6 +1,8 @@
 (function () {
   const USERS_KEY = "orpheus_users_v1";
   const SESSION_KEY = "orpheus_session_v3";
+  const SESSION_MIRROR_KEY = "orpheus_session_v2";
+  const sharedStore = window.argStore;
 
   const RANKS = [
     { key: "recruit", name: "Recruit", color: "#9fd9ff" },
@@ -53,10 +55,9 @@
     return { banned: false, bannedUntil: null, timeoutUntil: null, muted: false, notes: "" };
   }
 
-  function readUsers() {
+  function seedUsers(rawUsers = {}) {
     try {
-      const raw = localStorage.getItem(USERS_KEY);
-      const users = raw ? JSON.parse(raw) : {};
+      const users = rawUsers && typeof rawUsers === "object" ? { ...rawUsers } : {};
       // Migrate legacy owner username to ORPHEUS_CEO account slug.
       if (users.owner && !users[OWNER_SEED.username]) {
         users[OWNER_SEED.username] = users.owner;
@@ -74,24 +75,41 @@
         moderation: existingOwner.moderation || baseModeration(),
         createdAt: existingOwner.createdAt || Date.now(),
       };
-      localStorage.setItem(USERS_KEY, JSON.stringify(users));
       return users;
     } catch {
-      const users = { [OWNER_SEED.username]: { ...OWNER_SEED, promotions: [], progress: baseProgress(), moderation: baseModeration(), createdAt: Date.now() } };
-      localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      return users;
+      return { [OWNER_SEED.username]: { ...OWNER_SEED, promotions: [], progress: baseProgress(), moderation: baseModeration(), createdAt: Date.now() } };
     }
   }
 
-  function writeUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function readUsers() {
+    return seedUsers(sharedStore?.getCached(USERS_KEY, {}) || {});
+  }
+
+  async function syncUsers() {
+    const users = seedUsers(await (sharedStore?.pull(USERS_KEY, {}) || Promise.resolve({})));
+    writeUsers(users);
+    return users;
+  }
+
+  function writeUsers(users) {
+    const seeded = seedUsers(users);
+    if (sharedStore) {
+      sharedStore.set(USERS_KEY, seeded);
+      return seeded;
+    }
+    localStorage.setItem(USERS_KEY, JSON.stringify(seeded));
+    return seeded;
+  }
 
   function getSession() {
     try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
+      const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_MIRROR_KEY);
       if (!raw) return null;
       const session = JSON.parse(raw);
       if (!session.expiresAt || Date.now() > session.expiresAt) {
+        localStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(SESSION_MIRROR_KEY);
         return null;
       }
       return session;
@@ -109,18 +127,27 @@
       displayName: user.level === RANKS.length ? "ORPHEUS_CEO" : user.username,
       expiresAt: Date.now() + hours * 60 * 60 * 1000,
     };
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    const raw = JSON.stringify(session);
+    localStorage.setItem(SESSION_KEY, raw);
+    sessionStorage.setItem(SESSION_KEY, raw);
+    localStorage.removeItem(SESSION_MIRROR_KEY);
     return session;
   }
 
-  function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+  function clearSession() {
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_MIRROR_KEY);
+  }
+
+  syncUsers();
 
   async function signup(username, password) {
     const clean = username.trim().toLowerCase();
     if (!/^[a-z0-9_]{3,20}$/.test(clean)) return { ok: false, error: "Username must be 3-20 chars (a-z, 0-9, _)." };
     if (password.length < 6) return { ok: false, error: "Password must be at least 6 characters." };
 
-    const users = readUsers();
+    const users = await syncUsers();
     if (users[clean]) return { ok: false, error: "Username already exists." };
     const passwordHash = await sha256Hex(`orpheus:${clean}:${password}`);
 
@@ -131,7 +158,7 @@
 
   async function authenticate(username, password) {
     const clean = username.trim().toLowerCase();
-    const users = readUsers();
+    const users = await syncUsers();
     const resolvedUsername = clean === "owner" ? OWNER_SEED.username : clean;
     const user = users[resolvedUsername];
     if (!user) return null;
@@ -161,14 +188,16 @@
   function recordProgress(updateFn) {
     const session = getSession();
     if (!session) return;
-    const users = readUsers();
-    const user = users[session.username];
-    if (!user) return;
-    user.progress = updateFn(user.progress || baseProgress()) || user.progress;
-    user.progress.lastSeenAt = new Date().toISOString();
-    users[session.username] = user;
-    writeUsers(users);
-    setSession(user);
+    Promise.resolve(syncUsers()).then(() => {
+      const users = readUsers();
+      const user = users[session.username];
+      if (!user) return;
+      user.progress = updateFn(user.progress || baseProgress()) || user.progress;
+      user.progress.lastSeenAt = new Date().toISOString();
+      users[session.username] = user;
+      writeUsers(users);
+      setSession(user);
+    });
   }
 
   function expectedPromotionKey(level) {
@@ -285,6 +314,21 @@
     return users[username.toLowerCase()] || null;
   }
 
+  function updateUserLevel(username, level) {
+    if (!isOwnerSession()) return { ok: false, error: "Owner access required." };
+    const users = readUsers();
+    const key = username.toLowerCase();
+    if (!users[key]) return { ok: false, error: "User not found." };
+    if (key === OWNER_SEED.username) return { ok: false, error: "Cannot change owner rank." };
+    const nextLevel = Number(level);
+    if (!Number.isInteger(nextLevel) || nextLevel < 1 || nextLevel > RANKS.length) {
+      return { ok: false, error: `Level must be between 1 and ${RANKS.length}.` };
+    }
+    users[key].level = nextLevel;
+    writeUsers(users);
+    return { ok: true, level: nextLevel, rankName: rankFor(nextLevel).name };
+  }
+
   function getCurrentUser() {
     const session = getSession();
     if (!session) return null;
@@ -303,11 +347,13 @@
     promoteCurrent,
     listUsersForOwner,
     updateUserModeration,
+    updateUserLevel,
     getUser,
     getCurrentUser,
     unlockMilestone,
     getProgressSummary,
     nextPromotionKey,
     readUsers,
+    syncUsers,
   };
 })();

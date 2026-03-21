@@ -46,6 +46,9 @@
   });
 
   setInterval(render, 1500);
+  window.addEventListener("storage", (event) => {
+    if (event.key === CHAT_KEY || event.key === "orpheus_session_v3") render();
+  });
   render();
 
   const legendList = (window.argAuth.RANKS || []).map((r, idx) =>

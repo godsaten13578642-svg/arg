@@ -29,6 +29,7 @@
 
   function setAuth(hours) {
     const until = Date.now() + hours * 60 * 60 * 1000;
+    localStorage.setItem(AUTH_KEY, String(until));
     sessionStorage.setItem(AUTH_KEY, String(until));
   }
 

@@ -1,6 +1,7 @@
 (function () {
   const USERS_KEY = "orpheus_users_v1";
   const SESSION_KEY = "orpheus_session_v3";
+  const SESSION_MIRROR_KEY = "orpheus_session_v2";
 
   const RANKS = [
     { key: "recruit", name: "Recruit", color: "#9fd9ff" },
@@ -87,11 +88,13 @@
 
   function getSession() {
     try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
+      const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_MIRROR_KEY);
       if (!raw) return null;
       const session = JSON.parse(raw);
       if (!session.expiresAt || Date.now() > session.expiresAt) {
+        localStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(SESSION_MIRROR_KEY);
         return null;
       }
       return session;
@@ -109,11 +112,18 @@
       displayName: user.level === RANKS.length ? "ORPHEUS_CEO" : user.username,
       expiresAt: Date.now() + hours * 60 * 60 * 1000,
     };
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    const raw = JSON.stringify(session);
+    localStorage.setItem(SESSION_KEY, raw);
+    sessionStorage.setItem(SESSION_KEY, raw);
+    localStorage.removeItem(SESSION_MIRROR_KEY);
     return session;
   }
 
-  function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+  function clearSession() {
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_MIRROR_KEY);
+  }
 
   async function signup(username, password) {
     const clean = username.trim().toLowerCase();

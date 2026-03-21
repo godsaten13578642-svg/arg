@@ -198,6 +198,14 @@
     window.location.href = "index.html";
   });
 
+  window.addEventListener("storage", (event) => {
+    if ([CHAT_KEY, "orpheus_users_v1", "orpheus_session_v3"].includes(event.key)) {
+      renderPlayers();
+      renderDetails();
+    }
+  });
+
   wireTabs();
   renderPlayers();
+  renderDetails();
 })();

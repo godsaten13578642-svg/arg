@@ -1,7 +1,34 @@
 (function () {
   const API_BASE = "/api/state/";
   const POLL_MS = 2000;
+  const EVENT_URL = '/api/events';
   const timers = new Map();
+  const listeners = new Map();
+
+
+  let eventSource = null;
+
+  function notify(key, fallback) {
+    const cbs = listeners.get(key) || [];
+    const value = getCached(key, fallback);
+    cbs.forEach((callback) => callback(value));
+  }
+
+  function ensureEventSource() {
+    if (eventSource || typeof EventSource !== "function") return;
+    eventSource = new EventSource(EVENT_URL);
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data || "{}");
+        if (!payload?.key) return;
+        const merged = envelope(payload.item, null);
+        if (!merged) return;
+        writeCache(payload.key, merged);
+        notify(payload.key, merged.value);
+      } catch {}
+    };
+    eventSource.onerror = () => {};
+  }
 
   function envelope(value, fallback) {
     if (value && typeof value === "object" && !Array.isArray(value) && "value" in value) return value;
@@ -69,15 +96,20 @@
       if (event.key !== key) return;
       callback(getCached(key, fallback));
     };
-    window.addEventListener("storage", handler);
-    window.addEventListener("orpheus:shared-update", (event) => {
+    const customHandler = (event) => {
       if (event.detail?.key !== key) return;
       callback(getCached(key, fallback));
-    });
+    };
+    window.addEventListener("storage", handler);
+    window.addEventListener("orpheus:shared-update", customHandler);
+
+    if (!listeners.has(key)) listeners.set(key, []);
+    listeners.get(key).push(callback);
+    ensureEventSource();
 
     if (!timers.has(key)) {
       timers.set(key, window.setInterval(() => {
-        pull(key, fallback).then(callback).catch(() => {});
+        pull(key, fallback).then(() => notify(key, fallback)).catch(() => {});
       }, POLL_MS));
     }
   }

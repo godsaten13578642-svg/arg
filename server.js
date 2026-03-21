@@ -7,6 +7,7 @@ const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'global-state.json');
 const PORT = Number(process.env.PORT || 3000);
+const clients = new Set();
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -40,6 +41,16 @@ function readState() {
 function writeState(state) {
   ensureDataFile();
   fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2));
+}
+
+
+function broadcast(event) {
+  const payload = `data: ${JSON.stringify(event)}\n\n`;
+  for (const res of clients) {
+    try {
+      res.write(payload);
+    } catch {}
+  }
 }
 
 function sendJson(res, status, body) {
@@ -77,6 +88,18 @@ function safeFilePath(urlPath) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
+  if (url.pathname === '/api/events') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-store',
+      Connection: 'keep-alive',
+    });
+    res.write('retry: 2000\n\n');
+    clients.add(res);
+    req.on('close', () => clients.delete(res));
+    return;
+  }
+
   if (url.pathname.startsWith('/api/state/')) {
     const key = url.pathname.slice('/api/state/'.length);
     if (!key) return sendJson(res, 400, { ok: false, error: 'Missing key.' });
@@ -100,6 +123,7 @@ const server = http.createServer(async (req, res) => {
         const next = { value: payload.value, updatedAt: nextUpdatedAt };
         state[key] = nextUpdatedAt >= Number(current.updatedAt || 0) ? next : current;
         writeState(state);
+        broadcast({ key, item: state[key] });
         return sendJson(res, 200, { ok: true, item: state[key] });
       } catch (error) {
         return sendJson(res, 400, { ok: false, error: error.message || 'Invalid JSON.' });

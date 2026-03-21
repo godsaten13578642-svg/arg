@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORPHEUS_TERMINAL</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <section class="terminal-shell">
+    <div class="terminal-header">
+      <span>ORPHEUS NODE :: Interactive Recovery Interface</span>
+      <span id="status">session: validating</span>
+    </div>
+
+    <div id="output" aria-live="polite"></div>
+
+    <form class="prompt-row" id="terminal-form">
+      <span class="prompt">player@orpheus:~$</span>
+      <input id="cmd" autocomplete="off" autofocus placeholder="type help" />
+    </form>
+  </section>
+
+  <script src="auth-session.js"></script>
+  <script src="terminal.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CEO Console</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function () {
+      try {
+        const raw = sessionStorage.getItem("orpheus_session_v3");
+        const session = raw ? JSON.parse(raw) : null;
+        if (!session || !session.expiresAt || Date.now() > session.expiresAt || session.level !== 24) {
+          window.location.replace("index.html");
+          return;
+        }
+        document.documentElement.classList.add("ceo-ok");
+      } catch {
+        window.location.replace("index.html");
+      }
+    })();
+  </script>
+</head>
+<body>
+  <main class="panel owner-locked">
+    <h2>ORPHEUS_CEO Console</h2>
+    <p class="muted">Private control center. Manage players, chat moderation, and exports.</p>
+
+    <div class="btn-row">
+      <button class="btn ghost owner-tab active" data-tab="players" type="button">Players</button>
+      <button class="btn ghost owner-tab" data-tab="chat" type="button">Chat Tools</button>
+      <button class="btn ghost owner-tab" data-tab="system" type="button">System</button>
+    </div>
+
+    <section id="tab-players" class="owner-panel">
+      <div class="owner-split">
+        <aside>
+          <h3>Players</h3>
+          <ul id="playersList" class="player-list"></ul>
+        </aside>
+        <article>
+          <h3>Selected Player</h3>
+          <div id="playerDetails" class="muted">Select a player to view rank, progress, moderation, and chat logs.</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-chat" class="owner-panel" hidden>
+      <h3>Chat Controls</h3>
+      <div class="btn-row">
+        <button id="clearChatBtn" class="btn ghost" type="button">Clear Logs</button>
+        <button id="saveChatBtn" class="btn ghost" type="button">Save Logs</button>
+      </div>
+      <h4>Inject DEV Threads</h4>
+      <div class="btn-row">
+        <button class="btn ghost inject-dev" data-dev="DEV_00" type="button">DEV00 Talk</button>
+        <button class="btn ghost inject-dev" data-dev="DEV_01" type="button">DEV01 Talk</button>
+        <button class="btn ghost inject-dev" data-dev="DEV_02" type="button">DEV02 Talk</button>
+        <button class="btn ghost inject-dev" data-dev="DEV_03" type="button">DEV03 Talk</button>
+        <button class="btn ghost inject-dev" data-dev="DEV_04" type="button">DEV04 Talk</button>
+        <button class="btn ghost inject-dev" data-dev="DEV_05" type="button">DEV05 Talk</button>
+        <button class="btn ghost inject-dev" data-dev="SYSTEM" type="button">SYSTEM Interrupt</button>
+      </div>
+      <div class="panel dev00-custom-panel">
+        <h4>DEV00 Custom Message</h4>
+        <form id="dev00CustomForm" class="dev00-custom-form">
+          <label for="dev00CustomText">Message</label>
+          <textarea id="dev00CustomText" maxlength="280" placeholder="Type what DEV00 should say..."></textarea>
+          <button id="dev00CustomSend" class="btn ghost" type="submit">Send as DEV00</button>
+        </form>
+      </div>
+      <p id="chatToolsMsg" class="muted tiny"></p>
+    </section>
+
+    <section id="tab-system" class="owner-panel" hidden>
+      <h3>System</h3>
+      <div class="btn-row">
+        <button id="ownerLogout" class="btn ghost" type="button">Log Out</button>
+        <a class="btn ghost" href="terminal.html">Open Terminal</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="auth-session.js"></script>
+  <script src="owner-dashboard.js"></script>
+</body>
+</html>

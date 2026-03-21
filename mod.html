@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mod Mirror</title><link rel="stylesheet" href="styles.css" /></head>
+<body><main class="panel">
+<h2>/mod mirror</h2>
+<p>Filter rule excerpt:</p>
+<pre>if message contains "trap" or "loop" or "cycle"
+  rewrite as corruption warning
+
+if sender != DEV_00
+  reduce delivery confidence
+
+if player asks "whoami"
+  flag as host-ready</pre>
+<p class="muted tiny">Moderator stack appears compromised by trusted thread rules.</p>
+<!-- clue: doc_b.enc -->
+<p><a href="terminal.html">Return to terminal</a></p>
+</main></body></html>

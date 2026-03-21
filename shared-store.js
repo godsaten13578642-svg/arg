@@ -1,4 +1,5 @@
 (function () {
+  const API_CONFIG_KEY = "orpheus_api_base";
   const API_BASE = "/api/state/";
   const POLL_MS = 2000;
   const EVENT_URL = '/api/events';
@@ -8,6 +9,26 @@
 
   let eventSource = null;
 
+  function normalizeRoot(value) {
+    return (value || "").trim().replace(/\/$/, "");
+  }
+
+  function getApiRoot() {
+    const configured = window.ORPHEUS_SHARED_API_BASE || localStorage.getItem(API_CONFIG_KEY) || window.location.origin;
+    return normalizeRoot(configured || window.location.origin);
+  }
+
+  function getApiBase() {
+    return getApiRoot();
+  }
+
+  function setApiBase(value) {
+    const normalized = normalizeRoot(value) || window.location.origin;
+    localStorage.setItem(API_CONFIG_KEY, normalized);
+    return normalized;
+  }
+
+
   function notify(key, fallback) {
     const cbs = listeners.get(key) || [];
     const value = getCached(key, fallback);
@@ -16,7 +37,7 @@
 
   function ensureEventSource() {
     if (eventSource || typeof EventSource !== "function") return;
-    eventSource = new EventSource(EVENT_URL);
+    eventSource = new EventSource(`${getApiRoot()}${EVENT_URL}`);
     eventSource.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data || "{}");
@@ -59,7 +80,7 @@
   }
 
   async function request(key, options = {}) {
-    const response = await fetch(`${API_BASE}${encodeURIComponent(key)}`, {
+    const response = await fetch(`${getApiRoot()}${API_BASE}${encodeURIComponent(key)}`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
       ...options,
@@ -114,5 +135,5 @@
     }
   }
 
-  window.argStore = { pull, set, getCached, subscribe };
+  window.argStore = { pull, set, getCached, subscribe, getApiBase, setApiBase };
 })();

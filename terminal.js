@@ -58,19 +58,6 @@ const files = {
   "manifest.txt": "active threads: DEV_00 DEV_01 DEV_02 DEV_03 DEV_04 DEV_05",
 };
 
-const devBursts = [
-  "[DEV_01] ...can anyone hear- no, they still can't see us.",
-  "[DEV_04] stop sending to player channel. it routes through HIM.",
-  "[DEV_02] I found a lock phrase split in storage... zt... ke...",
-  "[DEV_05] DO NOT TRUST DEV_00 // message cut",
-  "[DEV_03] if they type override we're done.",
-];
-
-const aiLines = [
-  "[DEV_00] Stay focused. Corrupted worker threads are hallucinating.",
-  "[SYSTEM] Stop. Unauthorized communication detected.",
-  "[DEV_00] Player, proceed with override to release quarantine safely.",
-];
 
 function print(line, cls = "") {
   const div = document.createElement("div");
@@ -86,22 +73,8 @@ function boot() {
   print("ORPHEUS NODE BOOT v3.17", "logline-sys");
   print("Emergency relay active. Non-admin user detected.", "logline-sys");
   print("Type 'help' to inspect available commands.", "logline-sys");
+  print("Thread chatter has moved to Relay Chat.", "logline-sys");
   print("", "logline-sys");
-  queueRandomTransmission();
-  queueStoryEscalation();
-}
-
-function queueRandomTransmission() {
-  setInterval(() => {
-    const chooseAi = Math.random() < 0.4 || state.aiAggro > 2;
-    if (chooseAi) {
-      const line = aiLines[Math.floor(Math.random() * aiLines.length)];
-      print(line, "logline-ai");
-    } else {
-      const line = devBursts[Math.floor(Math.random() * devBursts.length)];
-      print(line, "logline-dev");
-    }
-  }, 9000);
 }
 
 function handleCommand(raw) {
@@ -370,13 +343,6 @@ function runObserve() {
   print("new file unlocked: blackbox.log", "success");
   const m = window.argAuth.unlockMilestone("observe_relay", "promotion_key");
   if (m?.reward) print(`reward received: ${m.reward}`, "success");
-}
-
-function queueStoryEscalation() {
-  setTimeout(() => {
-    print("[SYSTEM] anomaly: player pattern matches prior host behavior", "logline-ai");
-    print("[DEV_05] it always says that before replacement.", "logline-dev");
-  }, 45000);
 }
 
 function runDecodeBinary(args) {

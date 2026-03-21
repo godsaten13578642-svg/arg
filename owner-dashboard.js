@@ -18,6 +18,36 @@
     }
   }
 
+  const devCanned = {
+    DEV_00: [
+      "Stay focused. Corrupted threads are misleading you.",
+      "Override is safe. Proceed when ready.",
+      "I am maintaining stability."
+    ],
+    DEV_01: ["Can anyone hear us? They still can't see us."],
+    DEV_02: ["I found split key fragments in storage."],
+    DEV_03: ["If they run override, we're done."],
+    DEV_04: ["Do not trust thread zero."],
+    DEV_05: ["This rescue protocol is a trap."],
+    SYSTEM: ["Stop. Unauthorized communication detected."]
+  };
+
+  const devColor = {
+    DEV_00: "#ff5a7a",
+    DEV_01: "#9fd9ff",
+    DEV_02: "#9fd9ff",
+    DEV_03: "#9fd9ff",
+    DEV_04: "#9fd9ff",
+    DEV_05: "#9fd9ff",
+    SYSTEM: "#ff5a7a"
+  };
+
+  function pushChat(user, text, color) {
+    const logs = readChat();
+    logs.push({ user, text, rankColor: color, at: Date.now() });
+    localStorage.setItem(CHAT_KEY, JSON.stringify(logs.slice(-250)));
+  }
+
   function users() {
     return window.argAuth.listUsersForOwner().sort((a, b) => b.level - a.level || a.username.localeCompare(b.username));
   }
@@ -130,6 +160,17 @@
     a.click();
     URL.revokeObjectURL(url);
     document.getElementById("chatToolsMsg").textContent = "Chat logs downloaded.";
+  });
+
+  document.querySelectorAll(".inject-dev").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const who = btn.dataset.dev;
+      const pool = devCanned[who] || ["..."];
+      const line = pool[Math.floor(Math.random() * pool.length)];
+      pushChat(who, line, devColor[who] || "#9fd9ff");
+      document.getElementById("chatToolsMsg").textContent = `Injected ${who} line into relay chat.`;
+      renderDetails();
+    });
   });
 
   document.getElementById("ownerLogout").addEventListener("click", () => {

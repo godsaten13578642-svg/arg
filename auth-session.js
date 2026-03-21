@@ -314,6 +314,21 @@
     return users[username.toLowerCase()] || null;
   }
 
+  function updateUserLevel(username, level) {
+    if (!isOwnerSession()) return { ok: false, error: "Owner access required." };
+    const users = readUsers();
+    const key = username.toLowerCase();
+    if (!users[key]) return { ok: false, error: "User not found." };
+    if (key === OWNER_SEED.username) return { ok: false, error: "Cannot change owner rank." };
+    const nextLevel = Number(level);
+    if (!Number.isInteger(nextLevel) || nextLevel < 1 || nextLevel > RANKS.length) {
+      return { ok: false, error: `Level must be between 1 and ${RANKS.length}.` };
+    }
+    users[key].level = nextLevel;
+    writeUsers(users);
+    return { ok: true, level: nextLevel, rankName: rankFor(nextLevel).name };
+  }
+
   function getCurrentUser() {
     const session = getSession();
     if (!session) return null;
@@ -332,6 +347,7 @@
     promoteCurrent,
     listUsersForOwner,
     updateUserModeration,
+    updateUserLevel,
     getUser,
     getCurrentUser,
     unlockMilestone,

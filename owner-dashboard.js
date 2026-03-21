@@ -80,9 +80,29 @@
     });
   }
 
+  function rankEditor(user) {
+    if (!user || user.username === "orpheus_ceo") return "";
+    const options = (window.argAuth.RANKS || []).map((entry, index) => {
+      const level = index + 1;
+      const selected = level === user.level ? "selected" : "";
+      return `<option value="${level}" ${selected}>L${level} · ${entry.name}</option>`;
+    }).join("");
+
+    return `
+      <div class="owner-rank-editor">
+        <label for="playerLevelSelect">Rank / Level</label>
+        <div class="btn-row">
+          <select id="playerLevelSelect">${options}</select>
+          <button class="btn ghost" type="button" data-action="set_level">Apply Rank</button>
+        </div>
+      </div>
+    `;
+  }
+
   function actionButtons(user) {
     if (!user) return "";
     return `
+      ${rankEditor(user)}
       <div class="btn-row">
         <button class="btn ghost" data-action="ban">Ban</button>
         <button class="btn ghost" data-action="unban">Unban</button>
@@ -130,18 +150,25 @@
 
   function runAction(username, action) {
     const now = Date.now();
-    const patch = {
-      ban: { banned: true },
-      unban: { banned: false, bannedUntil: null },
-      timeout_30: { timeoutUntil: now + 30 * 60 * 1000 },
-      mute: { muted: true },
-      unmute: { muted: false },
-    }[action];
+    let result = null;
 
-    if (!patch) return;
-    const result = window.argAuth.updateUserModeration(username, patch);
+    if (action === "set_level") {
+      const select = document.getElementById("playerLevelSelect");
+      result = window.argAuth.updateUserLevel(username, Number(select?.value));
+    } else {
+      const patch = {
+        ban: { banned: true },
+        unban: { banned: false, bannedUntil: null },
+        timeout_30: { timeoutUntil: now + 30 * 60 * 1000 },
+        mute: { muted: true },
+        unmute: { muted: false },
+      }[action];
+      if (!patch) return;
+      result = window.argAuth.updateUserModeration(username, patch);
+    }
+
     const msg = document.getElementById("playerActionMsg");
-    if (msg) msg.textContent = result.ok ? `Applied: ${action}` : `Failed: ${result.error}`;
+    if (msg) msg.textContent = result.ok ? `Applied: ${action === "set_level" ? `rank ${result.rankName} (L${result.level})` : action}` : `Failed: ${result.error}`;
     renderPlayers();
     selectedUser = username;
     renderDetails();

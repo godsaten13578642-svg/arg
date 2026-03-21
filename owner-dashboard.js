@@ -162,13 +162,19 @@
     document.getElementById("chatToolsMsg").textContent = "Chat logs downloaded.";
   });
 
-  document.querySelectorAll(".inject-dev").forEach((btn) => {
+  const injectButtons = document.querySelectorAll(".inject-dev");
+  if (!injectButtons.length) {
+    const msg = document.getElementById("chatToolsMsg");
+    if (msg) msg.textContent = "DEV injection controls failed to load.";
+  }
+
+  injectButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const who = btn.dataset.dev;
       const pool = devCanned[who] || ["..."];
       const line = pool[Math.floor(Math.random() * pool.length)];
       pushChat(who, line, devColor[who] || "#9fd9ff");
-      document.getElementById("chatToolsMsg").textContent = `Injected ${who} line into relay chat.`;
+      document.getElementById("chatToolsMsg").textContent = `Injected ${who} talk line into relay chat.`;
       renderDetails();
     });
   });
